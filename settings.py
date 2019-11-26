@@ -123,6 +123,9 @@ OPENWRAP_BUCKET_CSV = 'TestLineItems.csv'
 #  Defaults to WEB
 #OPENWRAP_CREATIVE_TYPE = "WEB"
 
+#currency conversion
+CURRENCY_EXCHANGE = False
+
 #########################################################################
 
 # Try importing local settings, which will take precedence.
