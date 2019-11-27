@@ -24,6 +24,8 @@ import dfp.get_placements
 import dfp.get_users
 import dfp.get_device_categories
 import dfp.get_root_ad_unit_id
+import dfp.get_network
+
 from dfp.exceptions import (
   BadSettingException,
   MissingSettingException
@@ -44,7 +46,7 @@ from tasks.dfp_utils import (
 from urllib.request import urlopen
 import json
 
-from dfp.client import get_client
+#from dfp.client import get_client
 
 
 # Colorama for cross-platform support for colored logging.
@@ -547,10 +549,9 @@ def get_calculated_rate(start_rate_range, end_rate_range, rate_id, exchange_rate
 
 
 def get_dfp_network():
-    dfp_client = get_client()
-    network_service = dfp_client.GetService('NetworkService', version='v201811')
-    current_network = network_service.getCurrentNetwork()
+    current_network = dfp.get_network.get_dfp_network()
     return current_network
+
     
 def get_exchange_rate(currency_code):
     #currency_code = 'GBP'
