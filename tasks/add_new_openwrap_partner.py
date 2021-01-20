@@ -41,7 +41,6 @@ from tasks.price_utils import (
   num_to_micro_amount,
   micro_amount_to_num,
   num_to_str,
-  round_ceil,
 )
 from tasks.dfp_utils import (
   TargetingKeyGen,
@@ -594,12 +593,12 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
     # Set DFP custom targeting for key `pwtecp`
     key_gen_obj.set_price_value(price)
-
+  
     config = dfp.create_line_items.create_line_item_config(
       name=line_item_name,
       order_id=order_id,
       placement_ids=placement_ids,
-      cpm_micro_amount=num_to_micro_amount(round_ceil(price['rate'],2)),
+      cpm_micro_amount=num_to_micro_amount(round(price['rate'],2)),
       sizes=sizes,
       key_gen_obj=key_gen_obj,
       lineitem_type=lineitem_type,
