@@ -16,7 +16,7 @@ def create_line_items(line_items):
     an array: an array of created line item IDs
   """
   dfp_client = get_client()
-  line_item_service = dfp_client.GetService('LineItemService', version='v202002')
+  line_item_service = dfp_client.GetService('LineItemService', version='v202102')
   line_items = line_item_service.createLineItems(line_items)
 
   # Return IDs of created line items.
@@ -48,10 +48,10 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
     currency_code (str): the currency code (e.g. 'USD' or 'EUR')
     creative_type (str): type of creative, for differentiating native
     creative_template_ids (arr): an array of creative template IDs required for Native
-    same_adv_exception (bool) : https://developers.google.com/ad-manager/api/reference/v202002/LineItemService.LineItem.html#disablesameadvertisercompetitiveexclusion
+    same_adv_exception (bool) : https://developers.google.com/ad-manager/api/reference/v202102/LineItemService.LineItem.html#disablesameadvertisercompetitiveexclusion
     device_categories
     device_capabilities
-    roadblock_type (str) : https://developers.google.com/ad-manager/api/reference/v202002/LineItemService.LineItem.html#roadblockingtype
+    roadblock_type (str) : https://developers.google.com/ad-manager/api/reference/v202102/LineItemService.LineItem.html#roadblockingtype
  
   Returns:
     an object: the line item config
