@@ -53,13 +53,13 @@ DFP_PLACEMENT_SIZES = [
 # If False, the program will exit rather than create an advertiser.
 DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST = False
 
-# If settings.DFP_ORDER_NAME is the same as an existing order, add the created 
+# If settings.DFP_ORDER_NAME is the same as an existing order, add the created
 # line items to that order. If False, the program will exit rather than
 # modify an existing order.
 DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 
 # Optional
-# Each line item should have at least as many creatives as the number of 
+# Each line item should have at least as many creatives as the number of
 # ad units you serve on a single page because DFP specifies:
 #   "Each of a line item's assigned creatives can only serve once per page,
 #    so if you want the same creative to appear more than once per page,
@@ -140,14 +140,20 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 #  Defaults to WEB
 #OPENWRAP_CREATIVE_TYPE = "WEB"
 
-# Creative Template 
+# OpenWrap Use 1x1 Creative
+#  If true, will create creatives with 1x1 and size overrides
+#    to the sizes configured
+#  Defaults to False
+#OPENWRAP_USE_1x1_CREATIVE = True
+
+# Creative Template
 # Mandatory for Native creative type
 # you can specify an array for multiple creative templates
 OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 
 # Optional
 # Openwrap currency conversion
-# This option if set, will convert rate to network's currency, 
+# This option if set, will convert rate to network's currency,
 # Like the existing tool, default value is True for all platforms
 # and you can set it to false for WEB, WEB_SAFEFRAME and NATIVE only
 CURRENCY_EXCHANGE = False
