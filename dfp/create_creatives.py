@@ -87,10 +87,12 @@ def build_creative_name(bidder_code, order_name, creative_num, size=None, prefix
     Returns:
       a string
     """
-    if prefix != None and size != None:
-       return '{prefix}_{width}x{height}'.format(
-          prefix=prefix,width=size["width"], height=size["height"] )
-      
+    if prefix != None:
+      if size==None:
+        return '{prefix}_1x1'.format(prefix=prefix)
+      return '{prefix}_{width}x{height}'.format(
+        prefix=prefix,width=size["width"], height=size["height"] )
+
     if size == None:
       return '{bidder_code}: HB {order_name}, #{num}'.format(
           bidder_code=bidder_code, order_name=order_name, num=creative_num)
@@ -117,11 +119,11 @@ def create_duplicate_creative_configs(bidder_code, order_name, advertiser_id, si
     an array: an array of length `num_creatives`, each item a line item config
   """
   creative_configs = []
-  #this flow is for prebid where sizes are not passed
+  #this flow is for prebid where sizes are not passed and for openwrap with 1x1 option set
   if sizes == None:
     for creative_num in range(1, num_creatives + 1):
       config = create_creative_config(
-        name=build_creative_name(bidder_code, order_name, creative_num),
+        name=build_creative_name(bidder_code, order_name, creative_num, prefix=prefix),
         advertiser_id=advertiser_id,
         creative_file=creative_file,
         safe_frame=safe_frame

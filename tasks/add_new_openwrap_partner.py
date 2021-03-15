@@ -508,7 +508,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   size_overrides = []
   if use_1x1:
       size_overrides = sizes
-  logger.info("Cre]ating lineitem creative associations...")
+  logger.info("Creating lineitem creative associations...")
   dfp.associate_line_items_and_creatives.make_licas(line_item_ids,
     creative_ids, size_overrides=size_overrides, creative_type=creative_type)
 
