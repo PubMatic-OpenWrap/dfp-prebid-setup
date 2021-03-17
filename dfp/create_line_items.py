@@ -139,6 +139,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
 
   if creative_type in ('VIDEO', 'JWPLAYER'):
     line_item_config['environmentType'] = 'VIDEO_PLAYER'
+    line_item_config['videoMaxDuration'] = 60000
     line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['VIDEO_PLAYER']}
-     
+    
   return line_item_config
