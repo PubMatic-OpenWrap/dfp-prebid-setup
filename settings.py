@@ -144,6 +144,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 #  If true, will create creatives with 1x1 and size overrides
 #    to the sizes configured
 #  Defaults to False
+# Not applicable for native, since native creative is always created with 1x1 size
 #OPENWRAP_USE_1x1_CREATIVE = True
 
 # Creative Template

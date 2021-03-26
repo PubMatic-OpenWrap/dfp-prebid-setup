@@ -180,6 +180,13 @@ def create_creative_config_native(name, advertiser_id, creative_template_id):
 def create_creative_configs_for_video(advertiser_id, sizes, prefix, vast_url, duration):
   
   creative_configs = []
+  
+  #if size is not passed, create creative of size 1x1
+  if sizes == None:
+    sizes = [{
+      'width': 1,
+      'height': 1
+    }]
 
   for size in sizes:
     name = '{prefix}_{width}x{height}_VASTCREATIVE'.format(

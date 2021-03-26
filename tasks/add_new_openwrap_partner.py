@@ -506,7 +506,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
 
   # Associate creatives with line items.
   size_overrides = []
-  if use_1x1:
+  if use_1x1 and creative_type is not constant.NATIVE:
       size_overrides = sizes
   logger.info("Creating lineitem creative associations...")
   dfp.associate_line_items_and_creatives.make_licas(line_item_ids,
