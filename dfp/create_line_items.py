@@ -115,6 +115,14 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   if lineitem_type in ('NETWORK','HOUSE'):
     line_item_config['primaryGoal']['goalType'] = 'DAILY'
     line_item_config['primaryGoal']['units'] = 100
+    
+  if lineitem_type in ('SPONSORSHIP'):
+    line_item_config['primaryGoal']['unitType'] = 'IMPRESSIONS'
+    line_item_config['primaryGoal']['goalType'] = 'DAILY'
+    line_item_config['primaryGoal']['units'] = 100
+    line_item_config['skipInventoryCheck'] = True
+    line_item_config['allowOverbook'] = True
+
 
   if device_categories != None and len(device_categories) > 0:
       dev_cat_targeting = []
