@@ -678,7 +678,8 @@ def get_dfp_network():
 
 def get_exchange_rate(currency_code):
     #currency_code = 'GBP'
-    url = "http://apilayer.net/api/live?access_key=f7603d1bd4e44ba7242dc80858b93d8c&source=USD&currencies=" + currency_code +"&format=1"
+    url = "http://api.currencylayer.com/live?access_key=55586212cb183ad61a879b07d76e1d47&source=USD&currencies=" + currency_code +"&format=1"
+
     response = urlopen(url)
     string = response.read().decode('utf-8')
     json_obj = json.loads(string)
