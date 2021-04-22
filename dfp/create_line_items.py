@@ -44,7 +44,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
     sizes (arr): an array of objects, each containing 'width' and 'height'
       keys, to set the creative sizes this line item will serve
     key_gen_obj (obj): targeting key gen object
-    lineitem_type (str): the type of line item('PRICE_PRIORTY', 'HOUSE' or 'NETWORK')
+    lineitem_type (str): the type of line item('PRICE_PRIORTY', 'SPONSORSHIP', 'HOUSE' or 'NETWORK')
     currency_code (str): the currency code (e.g. 'USD' or 'EUR')
     creative_type (str): type of creative, for differentiating native
     creative_template_ids (arr): an array of creative template IDs required for Native
@@ -115,6 +115,13 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   if lineitem_type in ('NETWORK','HOUSE'):
     line_item_config['primaryGoal']['goalType'] = 'DAILY'
     line_item_config['primaryGoal']['units'] = 100
+
+  if lineitem_type in ('SPONSORSHIP'):
+    line_item_config['primaryGoal']['unitType'] = 'IMPRESSIONS'
+    line_item_config['primaryGoal']['goalType'] = 'DAILY'
+    line_item_config['primaryGoal']['units'] = 100
+    line_item_config['skipInventoryCheck'] = True
+    line_item_config['allowOverbook'] = True
 
   if device_categories != None and len(device_categories) > 0:
       dev_cat_targeting = []

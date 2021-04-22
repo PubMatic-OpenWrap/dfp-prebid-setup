@@ -83,6 +83,7 @@ If successful, it returns all the orders in your GAM account.
 |`DFP_ORDER_NAME`|The name of your new GAM order.|string|
 |`DFP_USER_EMAIL_ADDRESS`|The email of the GAM user acting as trafficker for the new order.|string|
 |`DFP_ADVERTISER_NAME`|The name of the GAM advertiser for the new order.|string|
+|`DFP_LINEITEM_TYPE`|The type of Lineitem. Can be either `PRICE_PRIORITY`,`SPONSORSHIP`,`NETWORK` or `HOUSE`.|string|
 |`DFP_TARGETED_PLACEMENT_NAMES`|The names of GAM placements targeted by the line items. Use empty array for, **Run of Network**.|array of strings|
 |`DFP_PLACEMENT_SIZES`|The creative sizes for the targeted placements.|array of objects (for example, `[{'width': '728', 'height': '90'}]`)|
 |`PREBID_BIDDER_CODE`|The value of [`pwtpid`](https://github.com/PubMatic/OpenWrap#wrapper-keys-sent-to-dfp) for this partner. Set to `None` to generate line items for all partners. Use array of strings if the line should match multiple partners.|string or array of strings|
