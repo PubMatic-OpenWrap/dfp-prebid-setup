@@ -25,7 +25,7 @@ DFP_ADVERTISER_NAME = 'PubMatic'
 #  This option is only for openwrap
 DFP_ADVERTISER_TYPE = "ADVERTISER"
 
-# Lineitem type. Can be either "NETWORK", "HOUSE", "PRICE_PRIORITY"
+# Lineitem type. Can be either "NETWORK", "HOUSE", "PRICE_PRIORITY" or "SPONSORSHIP"
 # This option is only for openwrap
 DFP_LINEITEM_TYPE= "PRICE_PRIORITY"
 
