@@ -9,11 +9,11 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 #########################################################################
 
 # A string describing the order
-DFP_ORDER_NAME = 'Mobile App Header Bidding' #'test_order_name'
+DFP_ORDER_NAME = 'test_order_name'
 
 # The email of the DFP user who will be the trafficker for
 # the created order
-DFP_USER_EMAIL_ADDRESS = 'test.dfp.sandbox@gmail.com' #'testuser@email.com'
+DFP_USER_EMAIL_ADDRESS = 'testuser@email.com'
 
 # The exact name of the DFP advertiser for the created order
 # Set 'PubMatic' for openwrap Line items
@@ -27,7 +27,7 @@ DFP_ADVERTISER_TYPE = "ADVERTISER"
 
 # Lineitem type. Can be either "NETWORK", "HOUSE", "PRICE_PRIORITY" or "SPONSORSHIP"
 # This option is only for openwrap
-DFP_LINEITEM_TYPE= "SPONSORSHIP"
+DFP_LINEITEM_TYPE= "PRICE_PRIORITY"
 
 # Names of placements the line items should target.
 # For Openwrap Leave empty for Run of Network (requires Network permission)
@@ -40,12 +40,12 @@ DFP_TARGETED_AD_UNIT_NAMES = []
 # Sizes of placements. These are used to set line item and creative sizes.
 DFP_PLACEMENT_SIZES = [
   {
-    'width': '320',
-    'height': '480'
+    'width': '300',
+    'height': '250'
   },
   {
-    'width': '480',
-    'height': '320'
+    'width': '728',
+    'height': '90'
   },
 ]
 
@@ -97,7 +97,7 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 # Optional
 # The prefix you want to add in line item's name.
 # This option is for openwrap only
-LINE_ITEM_PREFIX = 'test_ow_sdk_video_19_li'
+#LINE_ITEM_PREFIX = 'test_li'
 
 
 #########################################################################
@@ -138,7 +138,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 # OpenWrap Creative Type
 #  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "NATIVE", "VIDEO", "JWPLAYER"
 #  Defaults to WEB
-OPENWRAP_CREATIVE_TYPE = "IN_APP_VIDEO"
+#OPENWRAP_CREATIVE_TYPE = "WEB"
 
 # OpenWrap Use 1x1 Creative
 #  If true, will create creatives with 1x1 and size overrides
