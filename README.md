@@ -95,6 +95,8 @@ If successful, it returns all the orders in your GAM account.
     > `python -m tasks.add_new_openwrap_partner`
 3. Review your order, line items, and creatives for correctness.
 4. Finally, approve the order in GAM.
+5. To run the unit test, run:
+    > `python -m unittest -v tests.test_add_new_openwrap_partner`
 
 > **Note:** GAM may warn, "Needs creatives," on the order for ~15 minutes after order creation. This warning is usually incorrect and disappears on its own.
 
