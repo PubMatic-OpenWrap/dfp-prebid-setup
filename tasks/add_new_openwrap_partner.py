@@ -440,19 +440,18 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
 
   #get device capabilty ids for in-APP platform
   device_capability_ids = None
-  if device_capabilities != None:
-    if creative_type is constant.IN_APP or creative_type is constant.IN_APP_VIDEO:
-        device_capability_ids = []
-        if isinstance(device_capabilities, str):
-          device_capabilities = (device_capabilities)
+  if device_capabilities != None and creative_type in (constant.IN_APP, constant.IN_APP_VIDEO):
+    device_capability_ids = []
+    if isinstance(device_capabilities, str):
+        device_capabilities = (device_capabilities)
 
-        dc_map = dfp.get_device_capabilities.get_device_capabilities()
+    dc_map = dfp.get_device_capabilities.get_device_capabilities()
 
-        for dc in device_capabilities:
-          if dc in dc_map:
-              device_capability_ids.append(dc_map[dc])
-          else:
-              raise BadSettingException("Invalid Device Capability: {} ".format(dc))
+    for dc in device_capabilities:
+        if dc in dc_map:
+            device_capability_ids.append(dc_map[dc])
+        else:
+            raise BadSettingException("Invalid Device Capability: {} ".format(dc))
 
 
   # Get (or potentially create) the advertiser.

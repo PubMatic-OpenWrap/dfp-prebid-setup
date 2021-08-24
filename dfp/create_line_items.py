@@ -92,7 +92,6 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
     },
     'startDateTimeType': 'IMMEDIATELY',
     'unlimitedEndDateTime': True,
-    'childContentEligibility': 'DISALLOWED',
     'lineItemType': lineitem_type,
     'costType': 'CPM',
     'costPerUnit': {
@@ -152,7 +151,6 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
    
   if creative_type in ('IN_APP_VIDEO'):
     line_item_config['environmentType'] = 'VIDEO_PLAYER'
-    line_item_config['childContentEligibility'] = 'ALLOWED'
     line_item_config['videoMaxDuration'] = 15000
     line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['MOBILE_APP','VIDEO_PLAYER']}
     

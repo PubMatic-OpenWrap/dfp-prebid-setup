@@ -105,7 +105,7 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 #########################################################################
 
 # OpenWrap: you can specify an array to target multiple bidders with one line item
-# not applicable for JWPLAYER, IN_APP
+# not applicable for JWPLAYER, IN_APP, IN_APP_VIDEO
 PREBID_BIDDER_CODE = None
 
 # Prebid line item generator only accepts a single value
