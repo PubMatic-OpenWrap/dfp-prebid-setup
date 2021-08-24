@@ -84,7 +84,7 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 #    Valid Values: 'Connected TV', 'Desktop', 'Feature Phone', 'Set Top Box', 'Smartphone', 'Tablet'}
 #    Defaults to no device category targeting
 #    Currently supported for OpenWrap Only
-#    Not applicable for "IN_APP" and "JWPLAYER"
+#    Not applicable for "IN_APP", "IN_APP_VIDEO" and "JWPLAYER"
 #DFP_DEVICE_CATEGORIES = ['Desktop']
 
 # Optional
@@ -129,7 +129,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 
 # Optional
 # OpenWrap: Set custom line item targeting values
-# Not applicable for "IN_APP" and "JWPLAYER"
+# Not applicable for "IN_APP", "IN_APP_VIDEO" and "JWPLAYER"
 #OPENWRAP_CUSTOM_TARGETING = [
 #    ("a", "IS", ("1", "2", "3")),
 #    ("b", "IS_NOT", ("4", "5", "6")),
