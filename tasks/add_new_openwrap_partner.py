@@ -1003,8 +1003,6 @@ def main():
 
   prices_summary = []
   for p in prices:
-      print('\n')
-      print(p)
       prices_summary.append(p['rate'])
 
   if len(prices) > constant.LINE_ITEMS_LIMIT:
