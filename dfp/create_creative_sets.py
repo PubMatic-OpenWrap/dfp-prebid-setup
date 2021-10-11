@@ -52,4 +52,28 @@ def create_creative_set_config(creative_ids, sizes, prefix):
         }
         creative_sets.append(creative_set)
     return creative_sets
+
+
+def create_creative_set_config_adpod(creative_ids, sizes,  uniqueID, durations,slot):
+    """
+    Returns an array of creative  set config object.
+
+    Args:
+        creative ids (int array): the IDs of the creatives
+        sizes(String array): sizes for creative
+        uniqueID (string): creative name suffix for unique identification
+        durations(string array): Creative durations
+        slot(string): slot name
+    Returns:
+        an array: an array of creative set config
+    """
     
+    creative_sets = []
+    size = len(creative_ids)
+    for i in range(size):
+        creative_set = {
+            'name': '{}_{}X{}_{}SecondsAdSet_{}'.format(slot,  sizes[0]["height"], sizes[0]["width"], durations[i], uniqueID ),
+            'masterCreativeId': creative_ids[i]
+        }
+        creative_sets.append(creative_set)
+    return creative_sets    

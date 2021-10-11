@@ -204,3 +204,30 @@ def create_creative_configs_for_video(advertiser_id, sizes, prefix, vast_url, du
     creative_configs.append(creative)
     
   return creative_configs
+
+
+# This method creates creative config of type VastRedirectCreative for adpod
+# For every creative duration a new creative will be created.
+def create_creative_configs_for_adpod(advertiser_id, sizes, prefix, vast_url, creative_durations, slot):
+  
+  creative_configs = []
+
+  for i in range(len(creative_durations)):
+    name = '{slot}_{width}x{height}_{dur}SecondAd_{prefix}'.format(slot=slot,
+        width=sizes[0]["width"], height=sizes[0]["height"], dur=creative_durations[i],  prefix=prefix)
+
+    creative = {
+      'xsi_type': 'VastRedirectCreative',
+      'name': name,
+      'advertiserId': advertiser_id,
+      'size': sizes[0],
+      'vastXmlUrl': str(vast_url).format(slot),
+      'duration' : int(creative_durations[i])*1000,
+      'vastRedirectType' : 'LINEAR'
+    }
+
+    creative_configs.append(creative)
+    
+  return creative_configs
+
+
