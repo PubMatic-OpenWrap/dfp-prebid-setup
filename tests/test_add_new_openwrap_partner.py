@@ -702,11 +702,11 @@ class AddNewOpenwrapPartnerTests(TestCase):
       'filename': 'Inline_Header_Bidding_CTV-Med.csv'
     },
     {
-      'expected': 425,
+      'expected': 424,
       'filename': 'Inline_Header_Bidding_Dense.csv'
     },
     {
-      'expected': 2001,
+      'expected': 2000,
       'filename': 'Inline_Header_Bidding_High.csv'
     },
     {
