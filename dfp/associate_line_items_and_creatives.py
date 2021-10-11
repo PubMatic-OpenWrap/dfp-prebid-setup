@@ -15,7 +15,7 @@ def make_licas(line_item_ids, creative_ids, size_overrides=[], setup_type= None,
     line_item_ids (arr): an array of line item IDs
     creative_ids (arr): an array of creative IDs
     slot(string): slot name in case of setup_type = ADPOD
-    durations: creative durations for ADPOD.
+    durations(int array): creative durations for ADPOD.
   Returns:
     None
   """

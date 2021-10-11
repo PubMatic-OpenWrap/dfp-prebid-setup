@@ -623,6 +623,8 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
     device_category_ids (int)
     device_capability_ids (int)
     roadblock_type (str)
+    durations(array)
+    slot(string) 
   Returns:
     an array of objects: the array of DFP line item configurations
   """
@@ -1001,6 +1003,8 @@ def main():
 
   prices_summary = []
   for p in prices:
+      print('\n')
+      print(p)
       prices_summary.append(p['rate'])
 
   if len(prices) > constant.LINE_ITEMS_LIMIT:
