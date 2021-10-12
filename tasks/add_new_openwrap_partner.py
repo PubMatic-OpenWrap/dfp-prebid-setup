@@ -912,6 +912,9 @@ def main():
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER, constant.ADPOD]:
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
 
+  if setup_type not in[constant.ADPOD]:
+    adpod_size = 1
+    
   adpod_creative_durations = getattr(settings, 'ADPOD_CREATIVE_DURATIONS', None)
   if setup_type == constant.ADPOD and adpod_creative_durations is None:
     raise MissingSettingException('ADPOD_CREATIVE_DURATIONS')
