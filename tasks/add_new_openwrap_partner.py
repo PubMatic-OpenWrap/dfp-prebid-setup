@@ -447,7 +447,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
      sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
-     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, adpod_size, adpod_creative_durations):
+     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
@@ -505,77 +505,74 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   # Create the order or use the existing order.
   order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
 
-  for i in range(adpod_size):
-    slot = "s{}".format(i+1)
+  # Create creatives.
+  #Get creative template for native platform
+  creative_template_ids = None
+  if setup_type == constant.NATIVE:
+      creative_template_ids = dfp.get_creative_template.get_creative_template_ids_by_name(creative_template)
+
+  #if bidder is None, then bidder will be 'All'
+  bidder_str = bidder_code
+  if bidder_str == None:
+      bidder_str = "All"
+  elif isinstance(bidder_str, (list, tuple)):
+      bidder_str = "_".join(bidder_str)
+
+  #generate unique id that will be used for creative and line item naming
+  unique_id = get_unique_id(setup_type)
+
+  #create creatives
+  if setup_type == 'ADPOD':
+      logger.info('\nCreating creatives for slot {}...'.format(slot)) 
+  else:
+      logger.info("\ncreating creatives...")
+
+  size_arg = sizes
+  if use_1x1:
+      size_arg = None
+
+  creative_configs = get_creative_config(setup_type, bidder_str, order_name, advertiser_id, size_arg, num_creatives, creative_template_ids,  prefix=unique_id, adpod_creative_durations=adpod_creative_durations, slot=slot)
+  creative_ids = dfp.create_creatives.create_creatives(creative_configs)
+  
+  # if platform is video, create creative sets
+  if setup_type in (constant.VIDEO, constant.JW_PLAYER):
+      creative_set_configs = dfp.create_creative_sets.create_creative_set_config(creative_ids, sizes, unique_id)
+      creative_ids = dfp.create_creative_sets.create_creative_sets(creative_set_configs)
+  if setup_type == constant.ADPOD:
+      creative_set_configs = dfp.create_creative_sets.create_creative_set_config_adpod(creative_ids, sizes, unique_id, adpod_creative_durations, slot)
+      creative_ids = dfp.create_creative_sets.create_creative_sets(creative_set_configs)
+
+  # Create line items.
+  # if line item prefix is not passed, set unique id as lineitem prefix
+  if lineitem_prefix is None:
+      lineitem_prefix = unique_id
+
+  if setup_type == 'ADPOD':
+      logger.info('\nCreating line_itmes for slot {}...'.format(slot))
+  else:
+      logger.info("\ncreating line_items...")
+
+
+  line_items_config = create_line_item_configs(prices, order_id,
+      placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
+      currency_code, custom_targeting, setup_type, creative_template_ids, same_adv_exception=same_adv_exception,ad_unit_ids=ad_unit_ids,
+      device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
+  
+  line_item_ids = dfp.create_line_items.create_line_items(line_items_config)
+
+  # Associate creatives with line items.
+  size_overrides = []
+  if use_1x1 and setup_type is not constant.NATIVE:
+      size_overrides = sizes
+
+  if setup_type == 'ADPOD':
+      logger.info("\nCreating lineitem creative associations for slot {}...".format(slot))
+  else:
+      logger.info("\nCreating lineitem creative associations...")
+
+  dfp.associate_line_items_and_creatives.make_licas(line_item_ids,
+      creative_ids, size_overrides=size_overrides, setup_type=setup_type,slot=slot,durations=adpod_creative_durations)
     
-    # Create creatives.
-    #Get creative template for native platform
-    creative_template_ids = None
-    if setup_type == constant.NATIVE:
-        creative_template_ids = dfp.get_creative_template.get_creative_template_ids_by_name(creative_template)
-
-    #if bidder is None, then bidder will be 'All'
-    bidder_str = bidder_code
-    if bidder_str == None:
-        bidder_str = "All"
-    elif isinstance(bidder_str, (list, tuple)):
-        bidder_str = "_".join(bidder_str)
-
-    #generate unique id that will be used for creative and line item naming
-    unique_id = get_unique_id(setup_type)
-
-    #create creatives
-    if setup_type == 'ADPOD':
-        logger.info('\nCreating creatives for slot {}...'.format(slot)) 
-    else:
-        logger.info("\ncreating creatives...")
-
-    size_arg = sizes
-    if use_1x1:
-        size_arg = None
-
-    creative_configs = get_creative_config(setup_type, bidder_str, order_name, advertiser_id, size_arg, num_creatives, creative_template_ids,  prefix=unique_id, adpod_creative_durations=adpod_creative_durations, slot=slot)
-    creative_ids = dfp.create_creatives.create_creatives(creative_configs)
-    
-    # if platform is video, create creative sets
-    if setup_type in (constant.VIDEO, constant.JW_PLAYER):
-        creative_set_configs = dfp.create_creative_sets.create_creative_set_config(creative_ids, sizes, unique_id)
-        creative_ids = dfp.create_creative_sets.create_creative_sets(creative_set_configs)
-    if setup_type == constant.ADPOD:
-        creative_set_configs = dfp.create_creative_sets.create_creative_set_config_adpod(creative_ids, sizes, unique_id, adpod_creative_durations, slot)
-        creative_ids = dfp.create_creative_sets.create_creative_sets(creative_set_configs)
-
-    # Create line items.
-    # if line item prefix is not passed, set unique id as lineitem prefix
-    if lineitem_prefix is None:
-        lineitem_prefix = unique_id
-
-    if setup_type == 'ADPOD':
-        logger.info('\nCreating line_itmes for slot {}...'.format(slot))
-    else:
-        logger.info("\ncreating line_items...")
-
-
-    line_items_config = create_line_item_configs(prices, order_id,
-        placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
-        currency_code, custom_targeting, setup_type, creative_template_ids, same_adv_exception=same_adv_exception,ad_unit_ids=ad_unit_ids,
-        device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
-    
-    line_item_ids = dfp.create_line_items.create_line_items(line_items_config)
-
-    # Associate creatives with line items.
-    size_overrides = []
-    if use_1x1 and setup_type is not constant.NATIVE:
-        size_overrides = sizes
-
-    if setup_type == 'ADPOD':
-        logger.info("\nCreating lineitem creative associations for slot {}...".format(slot))
-    else:
-        logger.info("\nCreating lineitem creative associations...")
-
-    dfp.associate_line_items_and_creatives.make_licas(line_item_ids,
-        creative_ids, size_overrides=size_overrides, setup_type=setup_type,slot=slot,durations=adpod_creative_durations)
-
   logger.info("""
 
     Done! Please review your order, line items, and creatives to
@@ -1106,30 +1103,58 @@ def main():
     return
 
   try:
-    setup_partner(
-            user_email,
-            advertiser_name,
-            advertiser_type,
-            order_name,
-            placements,
-            sizes,
-            lineitem_type,
-            lineitem_prefix,
-            bidder_code,
-            prices,
-            setup_type,
-            creative_template,
-            num_creatives,
-            use_1x1,
-            currency_code,
-            custom_targeting,
-            same_adv_exception,
-            device_categories,
-            device_capabilities,
-            roadblock_type,
-            adpod_size,
-            adpod_creative_durations
-    )
+    if setup_type == constant.ADPOD:
+        for i in range(adpod_size):
+            slot = "s{}".format(i+1)      
+            setup_partner(
+                    user_email,
+                    advertiser_name,
+                    advertiser_type,
+                    order_name,
+                    placements,
+                    sizes,
+                    lineitem_type,
+                    lineitem_prefix,
+                    bidder_code,
+                    prices,
+                    setup_type,
+                    creative_template,
+                    num_creatives,
+                    use_1x1,
+                    currency_code,
+                    custom_targeting,
+                    same_adv_exception,
+                    device_categories,
+                    device_capabilities,
+                    roadblock_type,
+                    slot,
+                    adpod_creative_durations
+            )
+    else:
+        setup_partner(
+                    user_email,
+                    advertiser_name,
+                    advertiser_type,
+                    order_name,
+                    placements,
+                    sizes,
+                    lineitem_type,
+                    lineitem_prefix,
+                    bidder_code,
+                    prices,
+                    setup_type,
+                    creative_template,
+                    num_creatives,
+                    use_1x1,
+                    currency_code,
+                    custom_targeting,
+                    same_adv_exception,
+                    device_categories,
+                    device_capabilities,
+                    roadblock_type,
+                    None,
+                    None
+            )        
   except ConnectionError as e:
       logger.error('\nConnection Error. Please try again after some time! Err: \n{}'.format(e))
   except GoogleAdsServerFault as e:

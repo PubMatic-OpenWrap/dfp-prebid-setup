@@ -339,7 +339,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.WEB, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=['Desktop'], device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE',adpod_size=1,adpod_creative_durations=[5,10])
+                                               roadblock_type= 'ONE_OR_MORE',slot = None,adpod_creative_durations=None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -352,7 +352,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       .assert_called_once_with(bidder_code[0], order, 246810,  [{'width': '300', 'height': '250'}, {'width': '728', 'height': '90'}], 2, creative_file='creative_snippet_openwrap.html', prefix='DISPLAY_xyz', safe_frame=False))
     mock_create_creatives.create_creatives.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='WEB', size_overrides=[], slot='s1')
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='WEB', size_overrides=[], slot=None)
 
 
 
@@ -401,7 +401,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.VIDEO, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE',  adpod_size=1,adpod_creative_durations=[5,10])
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -416,7 +416,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     mock_create_creative_sets.create_creative_set_config.assert_called_once_with([54321,98765], sizes, 'VIDEO_xyz' )
     mock_create_creative_sets.create_creative_sets.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='VIDEO', size_overrides=[], slot='s1')
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='VIDEO', size_overrides=[], slot=None)
 
 
   @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
@@ -464,7 +464,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.ADPOD, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE',  adpod_size=1,adpod_creative_durations=[5,10])
+                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10])
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -534,12 +534,12 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.IN_APP, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=['Mobile Apps'], 
-                                               roadblock_type= 'ONE_OR_MORE', adpod_size=1,adpod_creative_durations=[5,10])
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
-    mock_get_device_capabilities.get_device_capabilities.assert_called_once()
+    mock_get_device_capabilities.get_device_capabilities.assert_called_once()   
     (mock_create_creatives.create_duplicate_creative_configs
       .assert_called_once_with(bidder_code[0], order, 246810,  sizes, 2, creative_file='creative_snippet_openwrap_in_app.html', prefix='INAPP_xyz', safe_frame=False))
-    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], durations=[5, 10], setup_type='IN_APP', size_overrides=[], slot='s1')
+    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], durations=None, setup_type='IN_APP', size_overrides=[], slot=None)
 
 
 
@@ -588,13 +588,13 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE', adpod_size=1,adpod_creative_durations=[5,10])
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
     mock_get_creative_template.get_creative_template_ids_by_name.assert_called_once()
     mock_create_creatives.create_creative_configs_for_native.assert_called_once_with(246810,  [123, 456], 2, 'NATIVE_xyz')
     mock_create_creatives.create_creatives.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='NATIVE', size_overrides=[], slot='s1')
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='NATIVE', size_overrides=[], slot=None)
 
 
   @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
@@ -634,7 +634,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE', adpod_size=1,adpod_creative_durations=[5,10])
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
     
     mock_get_root_ad_unit_id.get_root_ad_unit_id.assert_called_once()
     #args, kwargs = mock_create_line_item_configs.call_args
