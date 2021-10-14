@@ -299,8 +299,9 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         # dont set other targetting for JW Player
         if self.setup_type is not constant.JW_PLAYER:
 
-            #pwtbst
-            top_set['children'].append(pwt_bst_criteria)
+            if self.setup_type is not constant.ADPOD:
+                #pwtbst
+                top_set['children'].append(pwt_bst_criteria)
 
             #pwtplt
             if self.platform_criteria:
@@ -628,14 +629,15 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
   key_gen_obj.set_setup_type(setup_type)
 
-  # Set DFP custom targeting for key `pwtpid` based on bidder code
-  key_gen_obj.set_bidder_value(bidder_code)
+  if setup_type is not constant.constant.ADPOD:  
+    # Set DFP custom targeting for key `pwtpid` based on bidder code
+    key_gen_obj.set_bidder_value(bidder_code)
 
   # Set DFP targeting for custom targetting passed in settings.py
   key_gen_obj.set_custom_targeting(custom_targeting)
 
   #do not set platform targeting for inapp,jwplayer
-  if setup_type not in (constant.IN_APP, constant.JW_PLAYER):
+  if setup_type not in (constant.IN_APP, constant.JW_PLAYER,constant.ADPOD):
       key_gen_obj.set_platform_targetting()
 
   if setup_type is constant.JW_PLAYER:
@@ -667,7 +669,7 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
         line_item_name = '{}_{}'.format(lineitem_prefix, price_str)
     
     # Set DFP custom targeting for key `pwtecp`
-    if setup_type != constant.ADPOD:
+    if setup_type is not constant.ADPOD:
         key_gen_obj.set_price_value(price)
 
      # Set DFP custom targeting for key `pwtpb`
