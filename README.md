@@ -85,11 +85,13 @@ If successful, it returns all the orders in your GAM account.
 |`DFP_ADVERTISER_NAME`|The name of the GAM advertiser for the new order.|string|
 |`DFP_LINEITEM_TYPE`|The type of Lineitem. Can be either `PRICE_PRIORITY`,`SPONSORSHIP`,`NETWORK` or `HOUSE`.|string|
 |`DFP_TARGETED_PLACEMENT_NAMES`|The names of GAM placements targeted by the line items. Use empty array for, **Run of Network**.|array of strings|
-|`DFP_PLACEMENT_SIZES`|The creative sizes for the targeted placements.|array of objects (for example, `[{'width': '728', 'height': '90'}]`). Incase of ADPOD setup only one size object is allowed|
+|`DFP_PLACEMENT_SIZES`|The creative sizes for the targeted placements.|array of objects (for example, `[{'width': '728', 'height': '90'}]`). Incase of ADPOD setup only one size object is allowed, it will be applicable for all creatives.|
 |`PREBID_BIDDER_CODE`|The value of [`pwtpid`](https://github.com/PubMatic/OpenWrap#wrapper-keys-sent-to-dfp) for this partner. Set to `None` to generate line items for all partners. Use array of strings if the line should match multiple partners.|string or array of strings|
 |`OPENWRAP_SETUP_TYPE`|Which type of creative to use.  Options are `WEB`, `WEB_SAFEFRAME`, `AMP`, `IN_APP`, `NATIVE`, `VIDEO`, `JWPLAYER`,`ADPOD`.|string|
-|`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtecp` targeting for each line item.| string|
+|`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item for adpod setup  and  `pwtecp` targeting for each line item for other setups. For Adpod setup set this parameter to one of the `Inline_Header_Bidding_{Price Granularity}.csv file`.| string|
 |`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE`. | string |
+|`ADPOD_CREATIVE_DURATIONS`| Sets the duration for adpod video creatives. Set this parameter for adpod setup |integer array|None|
+|`ADPOD_SIZE`| Sets the number of slots in a single Adpod. Set this parameter when setup type is adpod |integer|1|
 
 2. Then, from the root of the repository, run:
     > `python -m tasks.add_new_openwrap_partner`
@@ -113,8 +115,6 @@ If successful, it returns all the orders in your GAM account.
 |`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. Not applicable for 'IN_APP' and 'JWPLAYER'|array of arrays (For example, `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.)|None|
 |`CURRENCY_EXCHANGE`|Same as **Currency Module** in the previous Line Item Tool. When used, this option converts the _rate_ calculated from CSV to the network's currency setting. This is applicable for `WEB`, `WEB_SAFEFRAME` and `NATIVE` only. |bool|True|
 |`OPENWRAP_USE_1x1_CREATIVE`| When this option is set, the tool creates a single creative with size 1x1 and all lineitems with size overrides. |bool|False|
-|`ADPOD_CREATIVE_DURATIONS`| Sets the duration for adpod video creatives |integer array|None|
-|`ADPOD_SIZE`| Sets the number of slots in a single Adpod |integer|1|
 
 
 ## Create Line Items for Prebid
