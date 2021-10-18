@@ -11,7 +11,7 @@ Set the following parameters in the settings.py file
  
  
 #### Inline Header Bidding  csv
-For Adpod setup use the following csv files for `OPENWRAP_BUCKET_CSV` parameter
+For Adpod setup use one of the following csv files present in `dfp-prebid-setup` root folder for `OPENWRAP_BUCKET_CSV` parameter 
 |  Price Granularity | CSV File |
 |--|--|
 | Auto  | Inline_Header_Bidding_Auto |
