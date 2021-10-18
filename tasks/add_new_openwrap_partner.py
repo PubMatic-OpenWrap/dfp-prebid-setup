@@ -738,6 +738,8 @@ def get_unique_id(setup_type):
         uid = u'VIDEO_{}'.format(uid)
     if setup_type is constant.JW_PLAYER:
         uid = u'JWP_{}'.format(uid)
+    if setup_type is constant.ADPOD:
+        uid = u'VIDEO_{}'.format(uid)
     return uid
 
 def get_calculated_rate(start_rate_range, end_rate_range, rate_id, exchange_rate, precision):
