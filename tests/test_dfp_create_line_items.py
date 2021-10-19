@@ -1,5 +1,7 @@
 
 from unittest import TestCase
+TestCase.maxDiff = None
+
 from mock import MagicMock, patch
 
 import settings
@@ -80,6 +82,7 @@ class DFPCreateLineItemsTests(TestCase):
         'costPerUnit': {'currencyCode': 'USD', 'microAmount': 24000000},
         'valueCostPerUnit': {'currencyCode': 'USD', 'microAmount': 24000000},
         'creativeRotationType': 'EVEN',
+        'creativeTargetings': None,
         'disableSameAdvertiserCompetitiveExclusion': False,
         'lineItemType': 'PRICE_PRIORITY',
         'unlimitedEndDateTime': True,
@@ -138,6 +141,7 @@ class DFPCreateLineItemsTests(TestCase):
         'costPerUnit': {'currencyCode': 'EUR', 'microAmount': 40000000},
         'valueCostPerUnit': {'currencyCode': 'EUR', 'microAmount': 40000000},
         'creativeRotationType': 'EVEN',
+        'creativeTargetings': None,
         'disableSameAdvertiserCompetitiveExclusion': False,
         'lineItemType': 'PRICE_PRIORITY',
         'unlimitedEndDateTime': True,

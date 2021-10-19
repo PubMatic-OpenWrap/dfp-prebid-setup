@@ -38,6 +38,7 @@ DFP_TARGETED_PLACEMENT_NAMES = []
 DFP_TARGETED_AD_UNIT_NAMES = []
 
 # Sizes of placements. These are used to set line item and creative sizes.
+# In case of  OPENWRAP_SETUP_TYPE = "ADPOD" only one size object is permitted, which will be applicable to all the creatives and line items for all the slots of Adpod.
 DFP_PLACEMENT_SIZES = [
   {
     'width': '300',
@@ -136,9 +137,9 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 #]
 
 # OpenWrap Creative Type
-#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "NATIVE", "VIDEO", "JWPLAYER"
+#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
 #  Defaults to WEB
-#OPENWRAP_CREATIVE_TYPE = "WEB"
+#OPENWRAP_SETUP_TYPE = "WEB"
 
 # OpenWrap Use 1x1 Creative
 #  If true, will create creatives with 1x1 and size overrides
@@ -158,6 +159,20 @@ OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 # Like the existing tool, default value is True for all platforms
 # and you can set it to false for WEB, WEB_SAFEFRAME and NATIVE only
 CURRENCY_EXCHANGE = False
+
+# Optional
+# OPENWRAP ADPOD_CREATIVE_DURATIONS 
+# This parameter is to set the duration of video ads creatives in seconds.
+# Ex ADPOD_CREATIVE_DURATIONS = [10,15] will create 2 creatives with durations 10 and 15 seconds per ad slot.
+# Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
+# This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
+ADPOD_CREATIVE_DURATIONS = [10,15]
+
+#Optional
+#OpenWrap ADPOD Size
+# This option is to set the number of slot in a single ADPOD.
+# Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
+ADPOD_SIZE = 1
 
 #########################################################################
 
