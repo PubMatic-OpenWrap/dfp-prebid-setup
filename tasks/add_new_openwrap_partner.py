@@ -629,7 +629,7 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
   key_gen_obj.set_setup_type(setup_type)
 
-  if setup_type is not constant.constant.ADPOD:  
+  if setup_type is not constant.ADPOD:  
     # Set DFP custom targeting for key `pwtpid` based on bidder code
     key_gen_obj.set_bidder_value(bidder_code)
 
