@@ -574,14 +574,6 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   dfp.associate_line_items_and_creatives.make_licas(line_item_ids,
       creative_ids, size_overrides=size_overrides, setup_type=setup_type,slot=slot,durations=adpod_creative_durations)
     
-  logger.info("""
-
-    Done! Please review your order, line items, and creatives to
-    make sure they are correct. Then, approve the order in DFP.
-
-    Happy bidding!
-
-  """)
 
 def get_creative_file(setup_type):
     creative_file = "creative_snippet_openwrap.html"
@@ -1158,7 +1150,15 @@ def main():
                     roadblock_type,
                     None,
                     None
-            )        
+            )     
+    logger.info("""
+
+    Done! Please review your order, line items, and creatives to
+    make sure they are correct. Then, approve the order in DFP.
+
+    Happy bidding!
+
+    """)           
   except ConnectionError as e:
       logger.error('\nConnection Error. Please try again after some time! Err: \n{}'.format(e))
   except GoogleAdsServerFault as e:
