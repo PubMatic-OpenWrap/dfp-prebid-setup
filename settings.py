@@ -161,12 +161,13 @@ OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 CURRENCY_EXCHANGE = False
 
 # Optional
-# OPENWRAP ADPOD_CREATIVE_DURATIONS 
+# OPENWRAP VIDEO_LENGTHS 
 # This parameter is to set the duration of video ads creatives in seconds.
-# Ex ADPOD_CREATIVE_DURATIONS = [10,15] will create 2 creatives with durations 10 and 15 seconds per ad slot.
+# Ex VIDEO_LENGTHS = [10,15] will create 2 creatives with durations 10 and 15 seconds per ad slot.
 # Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
 # This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
-ADPOD_CREATIVE_DURATIONS = [10,15]
+# Represents the video length parameter on UI.
+VIDEO_LENGTHS = [10,15]
 
 #Optional
 #OpenWrap ADPOD Size

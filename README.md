@@ -90,7 +90,7 @@ If successful, it returns all the orders in your GAM account.
 |`OPENWRAP_SETUP_TYPE`|Which type of creative to use.  Options are `WEB`, `WEB_SAFEFRAME`, `AMP`, `IN_APP`, `NATIVE`, `VIDEO`, `JWPLAYER`,`ADPOD`.|string|
 |`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item for adpod setup  and  `pwtecp` targeting for each line item for other setups. For Adpod setup set this parameter to one of the `Inline_Header_Bidding_{Price Granularity}.csv file`.| string|
 |`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE`. | string |
-|`ADPOD_CREATIVE_DURATIONS`| Sets the durations for adpod video creatives. Set this parameter for adpod setup |integer array|None|
+|`VIDEO_LENTHS`| Sets the durations for adpod video creatives. Set this parameter for adpod setup |integer array|None|
 |`ADPOD_SIZE`| Sets the number of slots in a single Adpod. Set this parameter when setup type is adpod |integer|1|
 
 2. Then, from the root of the repository, run:

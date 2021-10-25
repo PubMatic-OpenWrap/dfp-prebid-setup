@@ -908,11 +908,11 @@ def main():
   if setup_type not in[constant.ADPOD]:
     adpod_size = 1
     
-  adpod_creative_durations = getattr(settings, 'ADPOD_CREATIVE_DURATIONS', None)
+  adpod_creative_durations = getattr(settings, 'VIDEO_LENGTHS', None)
   if setup_type == constant.ADPOD and adpod_creative_durations is None:
-    raise MissingSettingException('ADPOD_CREATIVE_DURATIONS')
+    raise MissingSettingException('VIDEO_LENGTHS')
   elif setup_type == constant.ADPOD and len(adpod_creative_durations) < 1:
-    raise MissingSettingException('The setting "ADPOD_CREATIVE_DURATIONS" must contain alteast one durations.')
+    raise MissingSettingException('The setting "VIDEO_LENGTHS" must contain alteast one durations.')
 
   sizes = getattr(settings, 'DFP_PLACEMENT_SIZES', None)
   if setup_type not in [constant.NATIVE]:

@@ -54,7 +54,7 @@ bidder_code = ['mypartner']
   DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST=False,
   CURRENCY_EXCHANGE=False,
   ADPOD_SIZE=adpod_size,
-  ADPOD_CREATIVE_DURATIONS =adpod_creative_durations
+  VIDEO_LENGTHS =adpod_creative_durations
   )
 @patch('googleads.ad_manager.AdManagerClient.LoadFromStorage')
 class AddNewOpenwrapPartnerTests(TestCase):
@@ -104,7 +104,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     """
     It throws an exception with a missing setting.
     """
-    settings.ADPOD_CREATIVE_DURATIONS = None
+    settings.VIDEO_LENGTHS = None
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()      
  
