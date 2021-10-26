@@ -1000,11 +1000,12 @@ def main():
   prices_summary = []
   for p in prices:
       prices_summary.append(p['rate'])
-
-  if len(prices) > constant.LINE_ITEMS_LIMIT:
-      print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
-      .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
-      return
+  
+  if setup_type != constant.ADPOD:
+    if len(prices) > constant.LINE_ITEMS_LIMIT:
+        print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
+        .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
+        return
 
   # set bidder_code, custom_targetting, device categories to None when setup_type is IN-APP, JW_PLAYER
   # default roadblock_type to ONE_OR_MORE when setup_type is VIDEO, JW_PLAYER
