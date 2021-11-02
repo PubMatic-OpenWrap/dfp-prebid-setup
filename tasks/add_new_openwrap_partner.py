@@ -666,7 +666,7 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
      # Set DFP custom targeting for key `pwtpb`
     if setup_type  == constant.ADPOD:
-        key_gen_obj.set_bid_price(slot, num_to_str(price['rate'], precision=2))
+        key_gen_obj.set_bid_price(slot, num_to_str(price['start'], precision=2))
   
     config = dfp.create_line_items.create_line_item_config(
       name=line_item_name,
