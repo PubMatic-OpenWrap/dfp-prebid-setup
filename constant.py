@@ -13,7 +13,7 @@ VIDEO_VAST_URL = 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:pwtcid%%'
 VIDEO_DURATION = 1000
 
 #video specific creative params
-SDK_VIDEO_VAST_URL = 'https://ads.pubmatic.com/openwrapsdk/assets/gam/signallingvast.xml'
+SDK_VIDEO_VAST_URL = 'https://trinity.pubmatic.com/openwrapsdk/assets/gam/signallingvast?ad_id=%%PATTERN:pwtsid_pubmatic%%'
 SDK_VIDEO_DURATION = 15000
 
 #JW Player specific creative params
