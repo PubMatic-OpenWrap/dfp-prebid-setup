@@ -8,7 +8,10 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 # DFP SETTINGS
 #########################################################################
 
-# A string describing the order
+# A string describing the order.
+# For ADPOD setup, separate order wil be created for lineitems of each slot. 
+# Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
+# Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will test_order_name_s1_1,  test_order_name_s2_1  for 1st and 2nd slot of adpod
 DFP_ORDER_NAME = 'test_order_name'
 
 # The email of the DFP user who will be the trafficker for
@@ -170,10 +173,13 @@ CURRENCY_EXCHANGE = False
 VIDEO_LENGTHS = [10,15]
 
 #Optional
-#OpenWrap ADPOD Size
-# This option is to set the number of slot in a single ADPOD.
+#OpenWrap ADPOD_SLOTS
+# This option is to set the slot in a single ADPOD.
 # Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
-ADPOD_SIZE = 1
+# ex ADPOD_SLOTS = [1,2,3], will create 1st, 2nd and 3rd slot of adpod
+# ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
+# Slot numbers should be in incremental order.
+ADPOD_SLOTS = [1,2,3]
 
 #########################################################################
 

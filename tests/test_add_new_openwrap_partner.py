@@ -15,6 +15,7 @@ email = 'fakeuser@example.com'
 advertiser = 'My Advertiser'
 advertiser_type = 'ADVERTISER'
 order = 'My Cool Order'
+adpod_order = 'My Cool Order_s1_1'
 placements = ['My Site Leaderboard', 'Another Placement']
 ad_units = ['Leaderboard Ad Unit', 'Another Ad Unit']
 lineitem_type = 'PRICE_PRIORITY'
@@ -38,7 +39,7 @@ adpod_creative_size = [
 ]
 
 adpod_creative_durations = [5,10]
-adpod_size = 1
+adpod_slots = [1]
 
 bidder_code = ['mypartner']
 
@@ -53,7 +54,7 @@ bidder_code = ['mypartner']
   OPENWRAP_BUCKET_CSV=price_buckets_csv,  
   DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST=False,
   CURRENCY_EXCHANGE=False,
-  ADPOD_SIZE=adpod_size,
+  ADPOD_SLOTS=adpod_slots,
   VIDEO_LENGTHS =adpod_creative_durations
   )
 @patch('googleads.ad_manager.AdManagerClient.LoadFromStorage')
@@ -91,6 +92,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
 
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_missing_price_bucket_csv(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
@@ -119,6 +121,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_CURRENCY_CODE', 'EUR', create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_custom_currency_code(self, mock_input, mock_setup_partners,
     mock_dfp_client):
     """
@@ -130,6 +133,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
 
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='n')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_user_confirmation_rejected(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -140,6 +144,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
 
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='asdf')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_user_confirmation_not_accepted(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -150,6 +155,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
 
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_user_confirmation_accepted(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -161,6 +167,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_NUM_CREATIVES_PER_LINE_ITEM', 5, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_num_duplicate_creatives_from_settings(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -175,6 +182,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_NUM_CREATIVES_PER_LINE_ITEM', None, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_num_duplicate_creatives_no_settings(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -190,6 +198,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_NUM_CREATIVES_PER_LINE_ITEM', None, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_num_duplicate_creatives_no_placements(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -471,7 +480,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       placements)
     mock_get_advertisers.get_advertiser_id_by_name.assert_called_once_with(
       advertiser, advertiser_type)
-    mock_create_orders.create_order.assert_called_once_with(order, 246810,
+    mock_create_orders.create_order.assert_called_once_with(adpod_order, 246810,
       14523)
     (mock_create_creatives.create_creative_configs_for_adpod
       .assert_called_once_with(246810, adpod_creative_size, 'ADPOD_xyz', constant.ADPOD_VIDEO_VAST_URL,adpod_creative_durations,'s1'))
