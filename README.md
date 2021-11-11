@@ -80,7 +80,7 @@ If successful, it returns all the orders in your GAM account.
 
 |**Setting**|**Description**|**Type**|
 |:----------|:--------------|:-------|
-|`DFP_ORDER_NAME`|The name of your new GAM order. For ADPOD setup, separate order wil be created for lineitems of each slot. Each slot will have multiple orders if lineitems count exceeds 450(order limit). |string|
+|`DFP_ORDER_NAME`|The name of your new GAM order. For ADPOD setup, separate order wil be created for lineitems of each slot. Each slot will have multiple orders if lineitems count exceeds 450(order limit). Ex if SETUP = 'ADPOD' and DFP_ORDER_NAME = 'test' then order name  is s1_1_test for first slot's  1st order. |string|
 |`DFP_USER_EMAIL_ADDRESS`|The email of the GAM user acting as trafficker for the new order.|string|
 |`DFP_ADVERTISER_NAME`|The name of the GAM advertiser for the new order.|string|
 |`DFP_LINEITEM_TYPE`|The type of Lineitem. Can be either `PRICE_PRIORITY`,`SPONSORSHIP`,`NETWORK` or `HOUSE`.|string|

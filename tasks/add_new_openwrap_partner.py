@@ -513,7 +513,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   if setup_type  == constant.ADPOD:
     for p in prices:
         if total_lineitem_count % 450 == 1:
-            slot_order_name  = order_name + "_" + str(slot) + "_" + str(order_count)
+            slot_order_name  = str(slot) + "_" + str(order_count) + "_" + order_name  
             order_count = order_count + 1
             order_id = dfp.create_orders.create_order(slot_order_name, advertiser_id, user_id)
             order_list.append(slot_order_name)
@@ -924,7 +924,7 @@ def main():
   adpod_slots = getattr(settings, 'ADPOD_SLOTS', None)
   adpod_size = len(adpod_slots)
 
-  if setup_type == constant.ADPOD and adpod_slots == None:
+  if setup_type == constant.ADPOD and (adpod_slots == None or len(adpod_slots) == 0):
     raise MissingSettingException('The setting "ADPOD_SLOTS" must contain alteast one slot.')
   
   adpod_creative_durations = getattr(settings, 'VIDEO_LENGTHS', None)
@@ -1145,7 +1145,10 @@ def main():
                     slot,
                     adpod_creative_durations
             )
-            logger.info(" OrderIDs: " + str(order_list))
+        
+        logger.info(""" 
+        
+        Orders Created: """ + str(order_list))    
     else:
         setup_partner(
                     user_email,
@@ -1171,7 +1174,6 @@ def main():
                     None,
                     None
             )  
-
     logger.info("""
 
     Done! Please review your orders, line items, and creatives to

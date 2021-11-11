@@ -11,7 +11,7 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 # A string describing the order.
 # For ADPOD setup, separate order wil be created for lineitems of each slot. 
 # Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
-# Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will test_order_name_s1_1,  test_order_name_s2_1  for 1st and 2nd slot of adpod
+# Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will s1_1_test_order_name,  s2_1_test_order_name for 1st and 2nd slot of adpod
 DFP_ORDER_NAME = 'test_order_name'
 
 # The email of the DFP user who will be the trafficker for
