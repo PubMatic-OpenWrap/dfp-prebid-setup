@@ -88,7 +88,7 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 #    Valid Values: 'Connected TV', 'Desktop', 'Feature Phone', 'Set Top Box', 'Smartphone', 'Tablet'}
 #    Defaults to no device category targeting
 #    Currently supported for OpenWrap Only
-#    Not applicable for "IN_APP" and "JWPLAYER"
+#    Not applicable for "IN_APP", "IN_APP_VIDEO" and "JWPLAYER"
 #DFP_DEVICE_CATEGORIES = ['Desktop']
 
 # Optional
@@ -109,7 +109,7 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 #########################################################################
 
 # OpenWrap: you can specify an array to target multiple bidders with one line item
-# not applicable for JWPLAYER, IN_APP
+# not applicable for JWPLAYER, IN_APP, IN_APP_VIDEO
 PREBID_BIDDER_CODE = None
 
 # Prebid line item generator only accepts a single value
@@ -133,14 +133,14 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 
 # Optional
 # OpenWrap: Set custom line item targeting values
-# Not applicable for "IN_APP" and "JWPLAYER"
+# Not applicable for "IN_APP", "IN_APP_VIDEO" and "JWPLAYER"
 #OPENWRAP_CUSTOM_TARGETING = [
 #    ("a", "IS", ("1", "2", "3")),
 #    ("b", "IS_NOT", ("4", "5", "6")),
 #]
 
 # OpenWrap Creative Type
-#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
+#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
 #  Defaults to WEB
 #OPENWRAP_SETUP_TYPE = "WEB"
 

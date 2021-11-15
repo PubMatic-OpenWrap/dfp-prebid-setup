@@ -31,7 +31,7 @@ def make_licas(line_item_ids, creative_ids, size_overrides=[], setup_type= None,
   licas = []
 
   #set creativeSetId for video line items
-  if setup_type in ('JWPLAYER', 'VIDEO'):
+  if setup_type in ('JWPLAYER', 'VIDEO', 'IN_APP_VIDEO'):
     for line_item_id in line_item_ids:
       for creative_id in creative_ids:
         licas.append({

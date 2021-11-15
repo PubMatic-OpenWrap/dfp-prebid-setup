@@ -15,7 +15,7 @@ email = 'fakeuser@example.com'
 advertiser = 'My Advertiser'
 advertiser_type = 'ADVERTISER'
 order = 'My Cool Order'
-adpod_order = 'My Cool Order_s1_1'
+adpod_order = 's1_1_My Cool Order'
 placements = ['My Site Leaderboard', 'Another Placement']
 ad_units = ['Leaderboard Ad Unit', 'Another Ad Unit']
 lineitem_type = 'PRICE_PRIORITY'
@@ -227,6 +227,29 @@ class AddNewOpenwrapPartnerTests(TestCase):
     self.assertEqual(args[10], constant.IN_APP)
     #check roadblock type
     self.assertEqual(args[19], 'AS_MANY_AS_POSSIBLE')
+    #check bidder code
+    self.assertEqual(args[8], None)
+    #check device targetting
+    self.assertEqual(args[17], None)
+    #check custom targetting
+    self.assertEqual(args[15], None)
+
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP_VIDEO, create=True)
+  @patch('tasks.add_new_openwrap_partner.setup_partner')
+  @patch('tasks.add_new_openwrap_partner.load_price_csv')
+  @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  def test_openwrap_creative_type_inapp_video(self, mock_input, mock_load_price_csv,
+    mock_setup_partners, mock_dfp_client):
+    """
+    Make sure we use the default number of creatives per line item if the
+    setting does not exist.
+    """
+    tasks.add_new_openwrap_partner.main()
+    args, _ = mock_setup_partners.call_args
+    
+    self.assertEqual(args[10], constant.IN_APP_VIDEO)
+    #check roadblock type
+    self.assertEqual(args[19], 'ONE_OR_MORE')
     #check bidder code
     self.assertEqual(args[8], None)
     #check device targetting
@@ -549,6 +572,81 @@ class AddNewOpenwrapPartnerTests(TestCase):
     (mock_create_creatives.create_duplicate_creative_configs
       .assert_called_once_with(bidder_code[0], order, 246810,  sizes, 2, creative_file='creative_snippet_openwrap_in_app.html', prefix='INAPP_xyz', safe_frame=False))
     mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], durations=None, setup_type='IN_APP', size_overrides=[], slot=None)
+
+
+
+
+  @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
+  @patch('tasks.add_new_openwrap_partner.DFPValueIdGetter')
+  @patch('tasks.add_new_openwrap_partner.get_or_create_dfp_targeting_key')
+  @patch('dfp.associate_line_items_and_creatives')
+  @patch('dfp.create_creative_sets')
+  @patch('dfp.create_creatives')
+  @patch('dfp.create_line_items')
+  @patch('tasks.add_new_openwrap_partner.get_unique_id', return_value = 'IN_APP_VIDEO_xyz')
+  @patch('dfp.create_orders')
+  @patch('dfp.get_advertisers')
+  @patch('dfp.get_device_capabilities')
+  @patch('dfp.get_placements')
+  @patch('dfp.get_users')
+  def test_setup_partner_for_in_app_video(self, mock_get_users, mock_get_placements, mock_get_device_capabilities,
+    mock_get_advertisers, mock_create_orders, mock_get_unique_id,
+    mock_create_line_items, mock_create_creatives, mock_create_creative_sets, mock_licas, mock_dfp_client,
+    mock_get_or_create_dfp_targeting_key, mock_dfp_value_id_getter, mock_create_line_item_configs):
+    """
+    It calls all expected DFP functions.
+    """
+
+    mock_get_users.get_user_id_by_email = MagicMock(return_value=14523)
+    mock_get_placements.get_placement_ids_by_name = MagicMock(
+      return_value=[1234567, 9876543])
+    mock_get_device_capabilities.get_device_capabilities = MagicMock(
+      return_value= {
+        'Mobile Apps': 5005,
+        'MRAID v1': 5001,
+        'MRAID v2': 5006,
+        'Phone calls': 5000
+      }
+    )
+    mock_get_advertisers.get_advertiser_id_by_name = MagicMock(
+      return_value=246810)
+    mock_create_orders.create_order = MagicMock(return_value=1357913)
+    mock_create_creatives.create_creatives = MagicMock(return_value = [54321,98765])
+    mock_create_creative_sets.create_creative_sets = MagicMock(return_value = [54321,98765])
+    mock_create_line_items.create_line_items = MagicMock(
+      return_value =[543210, 987650])
+
+    prices = [{
+       'start': 1,
+       'end': 2,
+       'granularity': 1,
+       'rate': 1.5
+    }]
+
+    tasks.add_new_openwrap_partner.setup_partner(user_email=email, advertiser_name=advertiser, 
+                                               advertiser_type = advertiser_type, order_name=order,
+                                               placements=placements, sizes=sizes, lineitem_type = lineitem_type,
+                                               lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
+                                               setup_type = constant.IN_APP_VIDEO, creative_template = None, num_creatives=2,
+                                               use_1x1=False, currency_code='USD', custom_targeting= None,
+                                               same_adv_exception= False, device_categories=None, device_capabilities=['Mobile Apps'], 
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
+
+    mock_get_device_capabilities.get_device_capabilities.assert_called_once()
+    mock_get_users.get_user_id_by_email.assert_called_once_with(email)
+    mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
+      placements)
+    mock_get_advertisers.get_advertiser_id_by_name.assert_called_once_with(
+      advertiser, advertiser_type)
+    mock_create_orders.create_order.assert_called_once_with(order, 246810,
+      14523)
+    (mock_create_creatives.create_creative_configs_for_video
+      .assert_called_once_with(246810, sizes, 'IN_APP_VIDEO_xyz', constant.SDK_VIDEO_VAST_URL, constant.SDK_VIDEO_DURATION))
+    mock_create_creatives.create_creatives.assert_called_once()
+    mock_create_creative_sets.create_creative_set_config.assert_called_once_with([54321,98765], sizes, 'IN_APP_VIDEO_xyz' )
+    mock_create_creative_sets.create_creative_sets.assert_called_once()
+    mock_create_line_items.create_line_items.assert_called_once()
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='IN_APP_VIDEO', size_overrides=[], slot=None)
 
 
 
