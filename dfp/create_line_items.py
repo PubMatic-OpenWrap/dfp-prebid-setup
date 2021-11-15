@@ -144,9 +144,14 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   if ad_unit_ids is not None:
     line_item_config['targeting']['inventoryTargeting']['targetedAdUnits'] = [{'adUnitId': id} for id in ad_unit_ids]
 
-  if creative_type in ('VIDEO', 'JWPLAYER'):
+  if creative_type in ('VIDEO', 'JWPLAYER', 'IN_APP_VIDEO'):
     line_item_config['environmentType'] = 'VIDEO_PLAYER'
-    line_item_config['videoMaxDuration'] = 60000
-    line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['VIDEO_PLAYER']}
+
+    if creative_type in ('VIDEO', 'JWPLAYER'):
+      line_item_config['videoMaxDuration'] = 60000
+      line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['VIDEO_PLAYER']}
+    else:  # creative type is IN_APP_VIDEO
+      line_item_config['videoMaxDuration'] = 15000
+      line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['MOBILE_APP','VIDEO_PLAYER']}
     
   return line_item_config

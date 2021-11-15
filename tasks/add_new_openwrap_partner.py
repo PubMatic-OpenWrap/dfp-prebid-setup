@@ -79,6 +79,7 @@ creativetype_platform_map = {
     constant.WEB_SAFEFRAME: "display",
     constant.AMP: "amp",
     constant.IN_APP: "inapp",
+    constant.IN_APP_VIDEO: "inapp_video",
     constant.NATIVE: "native",
     constant.VIDEO : "video",
     constant.JW_PLAYER : "jwp"
@@ -423,7 +424,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   # Get the device category IDs
   # Dont get device categories for in-app and jwplayer platform
   device_category_ids = None
-  if device_categories != None and creative_type not in (constant.IN_APP, constant.JW_PLAYER):
+  if device_categories != None and creative_type not in (constant.IN_APP, constant.IN_APP_VIDEO, constant.JW_PLAYER):
       device_category_ids = []
       if isinstance(device_categories, str):
           device_categories = (device_categories)
@@ -439,18 +440,18 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
 
   #get device capabilty ids for in-APP platform
   device_capability_ids = None
-  if device_capabilities != None and creative_type is constant.IN_APP:
-      device_capability_ids = []
-      if isinstance(device_capabilities, str):
-          device_capabilities = (device_capabilities)
+  if device_capabilities != None and creative_type in (constant.IN_APP, constant.IN_APP_VIDEO):
+    device_capability_ids = []
+    if isinstance(device_capabilities, str):
+        device_capabilities = (device_capabilities)
 
-      dc_map = dfp.get_device_capabilities.get_device_capabilities()
+    dc_map = dfp.get_device_capabilities.get_device_capabilities()
 
-      for dc in device_capabilities:
-          if dc in dc_map:
-              device_capability_ids.append(dc_map[dc])
-          else:
-              raise BadSettingException("Invalid Device Capability: {} ".format(dc))
+    for dc in device_capabilities:
+        if dc in dc_map:
+            device_capability_ids.append(dc_map[dc])
+        else:
+            raise BadSettingException("Invalid Device Capability: {} ".format(dc))
 
 
   # Get (or potentially create) the advertiser.
@@ -486,7 +487,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   creative_ids = dfp.create_creatives.create_creatives(creative_configs)
 
   # if platform is video, create creative sets
-  if creative_type in (constant.VIDEO, constant.JW_PLAYER):
+  if creative_type in (constant.VIDEO, constant.IN_APP_VIDEO, constant.JW_PLAYER):
       creative_set_configs = dfp.create_creative_sets.create_creative_set_config(creative_ids, sizes, unique_id)
       creative_ids = dfp.create_creative_sets.create_creative_sets(creative_set_configs)
 
@@ -572,7 +573,7 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
   key_gen_obj.set_custom_targeting(custom_targeting)
 
   #do not set platform targeting for inapp,jwplayer
-  if creative_type not in (constant.IN_APP, constant.JW_PLAYER):
+  if creative_type not in (constant.IN_APP, constant.IN_APP_VIDEO, constant.JW_PLAYER):
       key_gen_obj.set_platform_targetting()
 
   if creative_type is constant.JW_PLAYER:
@@ -632,6 +633,8 @@ def get_creative_config(creative_type, bidder_str, order_name, advertiser_id, si
         creative_configs = dfp.create_creatives.create_creative_configs_for_native(advertiser_id, creative_template_ids, num_creatives, prefix)
     elif creative_type == constant.VIDEO:
         creative_configs = dfp.create_creatives.create_creative_configs_for_video(advertiser_id, sizes, prefix, constant.VIDEO_VAST_URL, constant.VIDEO_DURATION)
+    elif creative_type == constant.IN_APP_VIDEO:
+        creative_configs = dfp.create_creatives.create_creative_configs_for_video(advertiser_id, sizes, prefix, constant.SDK_VIDEO_VAST_URL, constant.SDK_VIDEO_DURATION)
     elif creative_type == constant.JW_PLAYER:
         creative_configs = dfp.create_creatives.create_creative_configs_for_video(advertiser_id, sizes, prefix, constant.JWP_VAST_URL, constant.JWP_DURATION)
     else:
@@ -653,6 +656,8 @@ def get_unique_id(creative_type):
         uid = u'AMP_{}'.format(uid)
     if creative_type is constant.IN_APP:
         uid = u'INAPP_{}'.format(uid)
+    if creative_type is constant.IN_APP_VIDEO:
+        uid = u'INAPP_VIDEO_{}'.format(uid)
     if creative_type is constant.NATIVE:
         uid = u'NATIVE_{}'.format(uid)
     if creative_type is constant.VIDEO:
@@ -821,7 +826,7 @@ def main():
   creative_type = getattr(settings, 'OPENWRAP_CREATIVE_TYPE', None)
   if creative_type is None:
     creative_type = constant.WEB
-  elif creative_type not in [constant.WEB, constant.WEB_SAFEFRAME, constant.AMP, constant.IN_APP,
+  elif creative_type not in [constant.WEB, constant.WEB_SAFEFRAME, constant.AMP, constant.IN_APP, constant.IN_APP_VIDEO,
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER]:
     raise BadSettingException('Unknown OPENWRAP_CREATIVE_TYPE: {0}'.format(creative_type))
 
@@ -869,7 +874,7 @@ def main():
        raise BadSettingException('DFP_DEVICE_CATEGORIES')
 
   device_capabilities = None
-  if creative_type is constant.IN_APP:
+  if creative_type is constant.IN_APP or creative_type is constant.IN_APP_VIDEO:
       device_capabilities = ('Mobile Apps', 'MRAID v1', 'MRAID v2')
 
   roadblock_type = getattr(settings, 'DFP_ROADBLOCK_TYPE', 'ONE_OR_MORE')
@@ -921,6 +926,11 @@ def main():
 
   if creative_type == constant.IN_APP:
       roadblock_type = 'AS_MANY_AS_POSSIBLE'
+      bidder_code = None
+      custom_targeting = None
+      device_categories = None
+  elif creative_type == constant.IN_APP_VIDEO:
+      roadblock_type = 'ONE_OR_MORE'
       bidder_code = None
       custom_targeting = None
       device_categories = None
