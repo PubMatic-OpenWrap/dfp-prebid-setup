@@ -80,7 +80,7 @@ If successful, it returns all the orders in your GAM account.
 
 |**Setting**|**Description**|**Type**|
 |:----------|:--------------|:-------|
-|`DFP_ORDER_NAME`|The name of your new GAM order.|string|
+|`DFP_ORDER_NAME`|The name of your new GAM order. For ADPOD setup, separate order wil be created for lineitems of each slot. Each slot will have multiple orders if lineitems count exceeds 450(order limit). Ex if SETUP = 'ADPOD' and DFP_ORDER_NAME = 'test' then order name  is s1_1_test for first slot's  1st order. |string|
 |`DFP_USER_EMAIL_ADDRESS`|The email of the GAM user acting as trafficker for the new order.|string|
 |`DFP_ADVERTISER_NAME`|The name of the GAM advertiser for the new order.|string|
 |`DFP_LINEITEM_TYPE`|The type of Lineitem. Can be either `PRICE_PRIORITY`,`SPONSORSHIP`,`NETWORK` or `HOUSE`.|string|
@@ -91,7 +91,7 @@ If successful, it returns all the orders in your GAM account.
 |`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item for adpod setup  and  `pwtecp` targeting for each line item for other setups. For Adpod setup set this parameter to one of the `Inline_Header_Bidding_{Price Granularity}.csv file`.| string|
 |`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE`. | string |
 |`VIDEO_LENTHS`| Sets the durations for adpod video creatives. Set this parameter for adpod setup |integer array|None|
-|`ADPOD_SIZE`| Sets the number of slots in a single Adpod. Set this parameter when setup type is adpod |integer|1|
+|`ADPOD_SLOTS`| Sets the slots position in a single Adpod ex ADPOD_SLOTS = [1,2,3]. Set this parameter when setup type is adpod |integer|None|
 
 2. Then, from the root of the repository, run:
     > `python -m tasks.add_new_openwrap_partner`

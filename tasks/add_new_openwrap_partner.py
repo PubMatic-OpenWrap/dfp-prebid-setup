@@ -56,6 +56,8 @@ from requests.exceptions import ConnectionError
 from googleads.errors import GoogleAdsServerFault
 
 
+order_list = []
+
 # Colorama for cross-platform support for colored logging.
 # https://github.com/kmjennison/dfp-prebid-setup/issues/9
 init()
@@ -453,6 +455,11 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
 
+  order_count = 1
+  total_lineitem_count = 1
+  slot_order_name = ''
+  order_id = ''
+
   # Get the user.
   user_id = dfp.get_users.get_user_id_by_email(user_email)
 
@@ -502,9 +509,18 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   # Get (or potentially create) the advertiser.
   advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
     advertiser_name, advertiser_type)
-
-  # Create the order or use the existing order.
-  order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
+ 
+  if setup_type  == constant.ADPOD:
+    for p in prices:
+        if total_lineitem_count % 450 == 1:
+            slot_order_name  = str(slot) + "_" + str(order_count) + "_" + order_name  
+            order_count = order_count + 1
+            order_id = dfp.create_orders.create_order(slot_order_name, advertiser_id, user_id)
+            order_list.append(slot_order_name)
+        p['order_id'] = order_id
+        total_lineitem_count = total_lineitem_count + 1 
+  else:
+    order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
 
   # Create creatives.
   #Get creative template for native platform
@@ -641,6 +657,7 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
   for price in prices:
     if setup_type ==constant.ADPOD:
         price_str = num_to_str(price['rate'], precision=2)
+        order_id = price['order_id']
     else:    
         price_str = num_to_str(price['rate'], precision=3)
 
@@ -882,7 +899,6 @@ def main():
   if lineitem_type is None:
     raise MissingSettingException('DFP_LINEITEM_TYPE')
 
-  adpod_size = getattr(settings, 'ADPOD_SIZE', 1)
 
   num_placements = 0
   placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', None)
@@ -905,9 +921,12 @@ def main():
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER, constant.ADPOD]:
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
 
-  if setup_type not in[constant.ADPOD]:
-    adpod_size = 1
-    
+  adpod_slots = getattr(settings, 'ADPOD_SLOTS', None)
+  adpod_size = len(adpod_slots)
+
+  if setup_type == constant.ADPOD and (adpod_slots == None or len(adpod_slots) == 0):
+    raise MissingSettingException('The setting "ADPOD_SLOTS" must contain alteast one slot.')
+  
   adpod_creative_durations = getattr(settings, 'VIDEO_LENGTHS', None)
   if setup_type == constant.ADPOD and adpod_creative_durations is None:
     raise MissingSettingException('VIDEO_LENGTHS')
@@ -1001,7 +1020,7 @@ def main():
   for p in prices:
       prices_summary.append(p['rate'])
   
-  if len(prices) > constant.LINE_ITEMS_LIMIT:
+  if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
        print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
        .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
        return
@@ -1100,8 +1119,8 @@ def main():
 
   try:
     if setup_type == constant.ADPOD:
-        for i in range(adpod_size):
-            slot = "s{}".format(i+1)      
+        for i in adpod_slots:
+            slot = "s{}".format(i) 
             setup_partner(
                     user_email,
                     advertiser_name,
@@ -1126,6 +1145,10 @@ def main():
                     slot,
                     adpod_creative_durations
             )
+        
+        logger.info(""" 
+        
+        Orders Created: """ + str(order_list))    
     else:
         setup_partner(
                     user_email,
@@ -1150,15 +1173,15 @@ def main():
                     roadblock_type,
                     None,
                     None
-            )     
+            )  
     logger.info("""
 
-    Done! Please review your order, line items, and creatives to
+    Done! Please review your orders, line items, and creatives to
     make sure they are correct. Then, approve the order in DFP.
 
     Happy bidding!
 
-    """)           
+    """)    
   except ConnectionError as e:
       logger.error('\nConnection Error. Please try again after some time! Err: \n{}'.format(e))
   except GoogleAdsServerFault as e:
