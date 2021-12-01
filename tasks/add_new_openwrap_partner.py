@@ -150,12 +150,17 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
             'operator': 'IS'
         }
 
-    def set_bidder_value(self, bidder_code):
+    def set_bidder_value(self, bidder_code, slot):
         logger.info("Setting bidder value to {0}".format(bidder_code))
 
         if bidder_code == None:
             self.bidder_criteria = None
             return
+        
+        if self.setup_type is constant.ADPOD:
+            bidderKey = '{}_pwtpid'.format(slot)   
+            self.pwtpid_key_id  =  get_or_create_dfp_targeting_key( bidderKey , key_type='PREDEFINED') 
+            self.BidderValueGetter = DFPValueIdGetter(bidderKey)
 
         if isinstance(bidder_code, (list, tuple)):
             # Multiple biders for us to OR to other
@@ -638,9 +643,8 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
   key_gen_obj.set_setup_type(setup_type)
 
-  if setup_type is not constant.ADPOD:  
-    # Set DFP custom targeting for key `pwtpid` based on bidder code
-    key_gen_obj.set_bidder_value(bidder_code)
+  # Set DFP custom targeting for key `pwtpid` based on bidder code
+  key_gen_obj.set_bidder_value(bidder_code, slot)
 
   # Set DFP targeting for custom targetting passed in settings.py
   key_gen_obj.set_custom_targeting(custom_targeting)
