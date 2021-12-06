@@ -93,6 +93,28 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
 
         super().__init__()
 
+        self.bidder_criteria = None
+        self.platform_criteria = None
+        self.price_els = None
+        self.jwPriceValueGetter = None
+        self.jw_price_key_id = None
+        self.setup_type = None
+        self.get_custom_targeting = []
+        self.bid_price = None
+        self.price_set = None
+        self.pwtpid_key_id = None
+        self.pwtbst_key_id  = None  
+        self.pwtecp_key_id = None
+        self.pwtplt_key_id = None
+        self.BidderValueGetter = None
+        self.BidderValueGetter = None
+        self.BstValueGetter = None
+        self.PriceValueGetter = None
+        self.PltValueGetter = None
+        self.creativeTargeting = None
+        self.pwtbst_value_id = None
+
+    def init_keys(self):  
         # Get DFP key IDs for line item targeting.
         self.pwtpid_key_id = get_or_create_dfp_targeting_key('pwtpid', key_type='PREDEFINED')  # bidder
         self.pwtbst_key_id = get_or_create_dfp_targeting_key('pwtbst', key_type='PREDEFINED')  # is pwt
@@ -105,37 +127,31 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.PriceValueGetter = DFPValueIdGetter('pwtecp', match_type='PREFIX')
         self.PltValueGetter = DFPValueIdGetter('pwtplt')
 
-        self.pwtbst_value_id = self.BstValueGetter.get_value_id("1")
-        self.bidder_criteria = None
-        self.platform_criteria = None
-        self.price_els = None
-        self.jwPriceValueGetter = None
-        self.jw_price_key_id = None
-        self.setup_type = None
-        self.get_custom_targeting = []
-        self.bid_price = None
-        self.price_set = None
+        self.pwtbst_value_id = self.BstValueGetter.get_value_id("1")    
 
     # Add creative level targeting for each creative duration for each adpod slot
     # ex: s1_pwtdur = 10
-    def set_creative_targeting(self, duration, slot):
-        
+    def set_creative_targeting(self, durations, slot):
+        self.creativeTargeting = {}
         key = '{}_pwtdur'.format(slot)   
         key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
-        value_getter = DFPValueIdGetter(key)  
-        value_id = value_getter.get_value_id(str(duration))
-        custom_criteria = {
-            'xsi_type': 'CustomCriteria',
-            'keyId': key_id,
-            'valueIds': [value_id],
-            'operator': 'IS'
-        }     
-        top_set = {
-            'xsi_type': 'CustomCriteriaSet',
-            'logicalOperator': 'OR',
-            'children': [custom_criteria]
-        }
-        return top_set
+        value_getter = DFPValueIdGetter(key) 
+        for dur in durations:         
+            value_id = value_getter.get_value_id(str(dur))
+            custom_criteria = {
+                'xsi_type': 'CustomCriteria',
+                'keyId': key_id,
+                'valueIds': [value_id],
+                'operator': 'IS'
+            }     
+            self.creativeTargeting[dur]  = {
+                'xsi_type': 'CustomCriteriaSet',
+                'logicalOperator': 'OR',
+                'children': [custom_criteria]
+            }
+            
+    def get_creative_targeting(self, duration):    
+        return self.creativeTargeting[duration]
     
     # Set pwtpb custom targeting key
     def set_bid_price(self, slot,price):
@@ -641,6 +657,9 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
     an array of objects: the array of DFP line item configurations
   """
 
+  if setup_type is not constant.ADPOD:
+      key_gen_obj.init_keys()
+
   key_gen_obj.set_setup_type(setup_type)
 
   # Set DFP custom targeting for key `pwtpid` based on bidder code
@@ -655,6 +674,9 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
   if setup_type is constant.JW_PLAYER:
       key_gen_obj.set_jwplayer_key()
+
+  if setup_type is constant.ADPOD:  
+     key_gen_obj.set_creative_targeting(durations,slot)  
 
   line_items_config = []
 
