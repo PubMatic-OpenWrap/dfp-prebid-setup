@@ -29,6 +29,8 @@ import dfp.get_device_categories
 import dfp.get_root_ad_unit_id
 import dfp.get_network
 import dfp.get_device_capabilities
+import dfp.get_orders
+import dfp.get_line_items
 
 from dfp.exceptions import (
   BadSettingException,
@@ -478,9 +480,9 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   """
 
   order_count = 1
-  total_lineitem_count = 1
+  total_lineitem_count = 0
   slot_order_name = ''
-  order_id = ''
+  order_id = 0
 
   # Get the user.
   user_id = dfp.get_users.get_user_id_by_email(user_email)
@@ -533,8 +535,18 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
     advertiser_name, advertiser_type)
  
   if setup_type  == constant.ADPOD:
+    order = get_existing_order_details(slot, order_name)
+    order_id = order['id']
+    total_lineitem_count  = order['lic'] 
+    order_count = order['order_count'] 
+    
+    if order_id != 0 and total_lineitem_count > 0:
+        logger.info(
+        'Using existing order with name "{name}".'.format(name=order['name']))
+        order_list.append(order['name'])
+    
     for p in prices:
-        if total_lineitem_count % 450 == 1:
+        if total_lineitem_count % 450 == 0:
             slot_order_name  = str(slot) + "_" + str(order_count) + "_" + order_name  
             order_count = order_count + 1
             order_id = dfp.create_orders.create_order(slot_order_name, advertiser_id, user_id)
@@ -761,6 +773,31 @@ def get_creative_config(setup_type, bidder_str, order_name, advertiser_id, sizes
 
     return creative_configs
 
+def get_existing_order_details(slot, order_name):
+
+    count = 1
+    while True:
+        orderName =  str(slot) + "_" + str(count) + "_" + order_name  
+        order = dfp.get_orders.get_order_by_name(orderName)
+        if order is None:
+            return {
+                    'id': 0,
+                    'order_count': count,
+                    'lic': 0,
+                    'name': orderName 
+                }  
+        
+        orderId = order['id']
+        lic = dfp.get_line_items.get_line_item_count_by_Order(orderId)
+        if lic < 450:
+           return {
+               'id': orderId,
+               'order_count': count,
+               'lic': lic,
+               'name': orderName
+           } 
+        count = count+1
+     
 def get_unique_id(setup_type):
 
     uid = shortuuid.uuid()
