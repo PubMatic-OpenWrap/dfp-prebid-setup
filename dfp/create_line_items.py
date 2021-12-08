@@ -94,7 +94,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
       crv_targeting.append({
           'name': "{}_{}second_ad".format(slot,dur),
           'targeting': {
-            'customTargeting': key_gen_obj.set_creative_targeting(dur,slot),
+            'customTargeting': key_gen_obj.get_creative_targeting(dur),
           }
       })
 
