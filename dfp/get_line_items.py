@@ -9,7 +9,7 @@ from dfp.client import get_client
 
 logger = logging.getLogger(__name__)
 
-def get_line_item_count_by_Order(order_id):
+def get_line_item_count_by_order(order_id):
   """
   Get  line item count for a order
 

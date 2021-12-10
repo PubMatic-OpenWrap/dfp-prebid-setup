@@ -546,7 +546,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
         order_list.append(order['name'])
     
     for p in prices:
-        if total_lineitem_count % 450 == 0:
+        if total_lineitem_count % constant.LINE_ITEMS_LIMIT == 0:
             slot_order_name  = str(slot) + "_" + str(order_count) + "_" + order_name  
             order_count = order_count + 1
             order_id = dfp.create_orders.create_order(slot_order_name, advertiser_id, user_id)
@@ -788,8 +788,8 @@ def get_existing_order_details(slot, order_name):
                 }  
         
         orderId = order['id']
-        lic = dfp.get_line_items.get_line_item_count_by_Order(orderId)
-        if lic < 450:
+        lic = dfp.get_line_items.get_line_item_count_by_order(orderId)
+        if lic < constant.LINE_ITEMS_LIMIT:
            return {
                'id': orderId,
                'order_count': count,
