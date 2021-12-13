@@ -74,7 +74,7 @@ To test your set up, from the top-level directory run:
 
 If successful, it returns all the orders in your GAM account.
 
-## [a relative link][dfp-prebid-setup/docs/adpod_setup.md]
+## [ADPOD Line Items Setup](fp-prebid-setup/docs/adpod_setup.md)
 
 ## Create Line Items for OpenWrap
 
