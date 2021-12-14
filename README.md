@@ -80,18 +80,18 @@ If successful, it returns all the orders in your GAM account.
 
 |**Setting**|**Description**|**Type**|
 |:----------|:--------------|:-------|
-|`DFP_ORDER_NAME`|The name of your new GAM order. For ADPOD setup, separate order wil be created for lineitems of each slot. Each slot will have multiple orders if lineitems count exceeds 450(order limit). Ex if SETUP = 'ADPOD' and DFP_ORDER_NAME = 'test' then order name  is s1_1_test for first slot's  1st order. |string|
+|`DFP_ORDER_NAME`|The name of your new GAM order. If `OPENWRAP_SETUP_TYPE`=`ADPOD`, separate order wil be created for lineitems of each slot. Each slot will have multiple orders if lineitems count exceeds 450(order limit). |string|
 |`DFP_USER_EMAIL_ADDRESS`|The email of the GAM user acting as trafficker for the new order.|string|
 |`DFP_ADVERTISER_NAME`|The name of the GAM advertiser for the new order.|string|
 |`DFP_LINEITEM_TYPE`|The type of Lineitem. Can be either `PRICE_PRIORITY`,`SPONSORSHIP`,`NETWORK` or `HOUSE`.|string|
 |`DFP_TARGETED_PLACEMENT_NAMES`|The names of GAM placements targeted by the line items. Use empty array for, **Run of Network**.|array of strings|
-|`DFP_PLACEMENT_SIZES`|The creative sizes for the targeted placements.|array of objects (for example, `[{'width': '728', 'height': '90'}]`). Incase of ADPOD setup only one size object is allowed, it will be applicable for all creatives.|
+|`DFP_PLACEMENT_SIZES`|The creative sizes for the targeted placements.|array of objects (for example, `[{'width': '728', 'height': '90'}]`). Incase of `OPENWRAP_SETUP_TYPE`=`ADPOD` only one size object is allowed, it will be applicable for all creatives.|
 |`PREBID_BIDDER_CODE`|The value of [`pwtpid`](https://github.com/PubMatic/OpenWrap#wrapper-keys-sent-to-dfp) for this partner. Set to `None` to generate line items for all partners. Use array of strings if the line should match multiple partners.|string or array of strings|
 |`OPENWRAP_SETUP_TYPE`|Which type of creative to use.  Options are `WEB`, `WEB_SAFEFRAME`, `AMP`, `IN_APP`, `IN_APP_VIDEO`, `NATIVE`, `VIDEO`, `JWPLAYER`,`ADPOD`.|string|
 |`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item for adpod setup  and  `pwtecp` targeting for each line item for other setups. For Adpod setup set this parameter to one of the `Inline_Header_Bidding_{Price Granularity}.csv file`.| string|
 |`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE`. | string |
-|`VIDEO_LENTHS`| Sets the durations for adpod video creatives. Set this parameter for adpod setup |integer array|None|
-|`ADPOD_SLOTS`| Sets the slots position in a single Adpod ex ADPOD_SLOTS = [1,2,3]. Set this parameter when setup type is adpod |integer|None|
+|`VIDEO_LENTHS`| Sets the durations for adpod video creatives. This is only required when `OPENWRAP_SETUP_TYPE`=`ADPOD` |integer array|None|
+|`ADPOD_SLOTS`| Sets the slots position in a single Adpod. ex ADPOD_SLOTS = [1,2,3] for 1st, 2nd, 3rd slot of adpod. This is only required when `OPENWRAP_SETUP_TYPE`=`ADPOD`|integer Array|None|
 
 2. Then, from the root of the repository, run:
     > `python -m tasks.add_new_openwrap_partner`
@@ -101,6 +101,9 @@ If successful, it returns all the orders in your GAM account.
     > `python -m unittest -v tests.test_add_new_openwrap_partner`
 
 > **Note:** GAM may warn, "Needs creatives," on the order for ~15 minutes after order creation. This warning is usually incorrect and disappears on its own.
+
+
+## [ADPOD Line Items Setup](docs/adpod_setup.md)
 
 ### More optional settings
 
