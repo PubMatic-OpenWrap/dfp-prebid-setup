@@ -1,50 +1,31 @@
+
 # Line Item Tool - Adpod Setup
 
----
 ##### Set the following parameters in the setting.py files
- 1.  Set values for`DFP_USER_EMAIL_ADDRESS`.
- 2.  Set value for `DFP_ADVERTISER_NAME`.
- 3.  Set `DFP_ADVERTISER_TYPE` parameter to `ADVERTISER` or `AD_NETWORK`.         
- 4.  Set `DFP_LINEITEM_TYPE` to `PRICE_PRIORITY`.  
- 5.  Set `OPENWRAP_SETUP_TYPE` to `ADPOD`              
- 6.  Set `DFP_TARGETED_PLACEMENT_NAMES` to  arrary of Names of placements the line items should target.
- 	 `DFP_TARGETED_PLACEMENT_NAMES = []` represents `RUN OF NETWORK`.
- 7.  Set `ADPOD_SLOTS` parameter to slots position in adpod. 
- 	 Ex: `ADPOD_SLOTS = [1,2,3]`  represents  the 1st, 2nd and 3rd slot position in adpod.
- 8. Set `DFP_ORDER_NAME` parameter with order name.
- 	Separate order wil be created for lineitems of each slot. 
-    Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
-    Ex:  `DFP_ORDER_NAME = 'test_order_name'` then order name will `s1_1_test_order_name` for `1st` slot and  `s2_1_test_order_name` for `2nd` slot of adpod
-   
-    `REUSE ADPOD ORDER`:
-    Existing order names are like `['s1_1_test', 's2_1_test']` for 1st and 2nd slot of adpod then set `DFP_ORDER_NAME = 'test'` for using existing orders.
 
- 9. Set `DFP_PLACEMENT_SIZES` with creative size. Add only one size object which will be used for all creatives. 
-	Ex `DFP_PLACEMENT_SIZES =[{'width': '1','height': '1'}]` will be used for creatives sizes. 
- 10. Set `VIDEO_LENGTHS` with adpod video creative durations. 
- 	 Ex `VIDEO_LENGTHS = [5,10,15]` will create creatives with durations 5, 10 and 15 secs for each slot of Adpod.
- 11. Set `PREBID_BIDDER_CODE` to array of bidier codes to target multiple bidders with one line item.
-	 Ex PREBID_BIDDER_CODE = ['pubmatic']
- 	 This parameter is `optional`.
- 	 Set this parameter to get bidder level reporting for adpod.
- 12. Set `CURRENCY_EXCHANGE` to national currency to use in line items.
- 	This parameter is `Optional`. 
-    Ex  `CURRENCY_EXCHANGE = USD`.
- 13. Set `DFP_DEVICE_CATEGORIES` to one of `Connected TV`, `Desktop`, `Feature Phone`, `Set Top Box`, `Smartphone`, and `Tablet`.
-    `Optional Parameter`
- 	This parameter used to set device category targetting for a Line item. 
- 14. Set `DFP_ROADBLOCK_TYPE` to one of  `ONE_OR_MORE` or `AS_MANY_AS_POSSIBLE`
- 	Defaults to `ONE OR MORE`
- 15. Set `OPENWRAP_CUSTOM_TARGETING` to array of custom targeting for line items.
- 	Ex `OPENWRAP_CUSTOM_TARGETING` = `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.
- 	`This parameter is optional`.
- 16. Set `OPENWRAP_BUCKET_CSV` to one of the csv file mentioned in the table below.			
+|**Settings**|**Description**|**Type**|
+|:----------|:--------------|:-------|
+|`DFP_USER_EMAIL_ADDRESS`| Email of the DFP user who will be the trafficker | string |
+|`DFP_ADVERTISER_NAME`| The exact name of the DFP advertiser for the order. <br> Set `PubMatic` for openwrap line items | string |
+|`DFP_ADVERTISER_TYPE`| Advertiser type. Can be either `ADVERTISER` or `AD_NETWORK`. |string|
+|`DFP_LINEITEM_TYPE`| Type of LineItem. Set to `PRICE_PRIORITY`| string|
+|`OPENWRAP_SETUP_TYPE`| Setup type. Set to `ADPOD`| string  |
+|`ADPOD_SLOTS`| Represents the position of slot in APOD. <br> Ex: `ADPOD_SLOTS = [1,2,3]`  represents  the 1st, 2nd and 3rd slot position in adpod.| integer array|
+| `DFP_ORDER_NAME` | Name of order that will be created in DFP. <br> Order will be created for lineitems of each slot.<br>Each slot will have multiple orders if lineitems count per slot exceeds 450(order limit).<br><br>Ex: `DFP_ORDER_NAME = 'test_order_name'` then order name will `s1_1_test_order_name` for `1st` slot and  `s2_1_test_order_name` for `2nd` slot of adpod.<br><br>REUSE ADPOD ORDER:<br> order names are like `['s1_1_test', 's2_1_test']` for 1st and 2nd slot of adpod then set `DFP_ORDER_NAME = 'test'` for using existing orders.| string |
+|`DFP_TARGETED_PLACEMENT_NAMES`* **(Optional)***| The names of GAM placements targeted by the line items. Use empty array for, `Run of Network.`| string array| 
+|`DFP_PLACEMENT_SIZES`| Represents creative placement sizes. Add only one size object which will be used for all creatives. <br> Ex `DFP_PLACEMENT_SIZES =[{'width': '1','height': '1'}]` will be used for creatives sizes. | object |
+|`VIDEO_LENGTHS`| Adpod video creative durations.<br> Ex `VIDEO_LENGTHS = [5,10,15]` will create creatives  with durations 5, 10 and 15 secs for each slot of Adpod. | integer array|
+|`PREBID_BIDDER_CODE` ***(Optional)***| Bidder codes to target bidders with one line item. <br>Ex `PREBID_BIDDER_CODE = ['pubmatic']`. This parameter is mandatory for bidder level reporting. Set to `None` to generate line items for all partners.   | string array|
+|`CURRENCY_EXCHANGE`|  National currency to use in line items.  Ex  `CURRENCY_EXCHANGE = USD`.| string|
+|`DFP_DEVICE_CATEGORIES` ***(Optional)***| This parameter used to set device category targeting for a Line item. Set to one of `Connected TV`, `Desktop`, `Feature Phone`, `Set Top Box`, `Smartphone`, and `Tablet`. | string |
+|`DFP_ROADBLOCK_TYPE`| Set to one of  `ONE_OR_MORE` or `AS_MANY_AS_POSSIBLE`| string |
+|`OPENWRAP_CUSTOM_TARGETING` ***(Optional)***|Array of custom targeting for line items. <br>Ex `OPENWRAP_CUSTOM_TARGETING` = `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.| object array|
+|`DFP_SAME_ADV_EXCEPTION` ***(Optional)***|Determines whether to set the `Same Advertiser Exception` on line items. Currently works only for OpenWrap.|bool|
+ |`OPENWRAP_BUCKET_CSV` | Set this to one of the cvs file mentioned in ` Inline Header Bidding  csv` table  below. This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item..| string |
 
-
- 
- 
 #### Inline Header Bidding  csv
 For Adpod setup use one of the following csv files present in `dfp-prebid-setup`  folder for `OPENWRAP_BUCKET_CSV` parameter 
+
 |  Price Granularity | CSV File |
 |--|--|
 | Auto  | Inline_Header_Bidding_Auto |
@@ -61,4 +42,4 @@ For Adpod setup use one of the following csv files present in `dfp-prebid-setup`
 3. `60 seconds` is the default maximun duration creative,  line item can serve. 
    If the creative duration exceeds `60 seconds`, ad serving might fail.
 4. Tool creates separate order for each adpod slot.
-5. In the line item csv files the `rate_id` value should always be `2(minimum)` or `-1` for Adpod setup. 
+5. In the line item csv files the `rate_id` value should always be `2 (minimum)` for Adpod setup. 
