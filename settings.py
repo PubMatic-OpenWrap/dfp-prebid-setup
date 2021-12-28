@@ -149,6 +149,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 #    to the sizes configured
 #  Defaults to False
 # Not applicable for native, since native creative is always created with 1x1 size
+# Not applicable for ADPOD
 #OPENWRAP_USE_1x1_CREATIVE = True
 
 # Creative Template

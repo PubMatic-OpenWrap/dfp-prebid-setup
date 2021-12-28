@@ -74,6 +74,10 @@ To test your set up, from the top-level directory run:
 
 If successful, it returns all the orders in your GAM account.
 
+
+## ADPOD Line Items Setup
+   ***[Refer this link for Adpod setup](docs/adpod_setup.md)*** 
+
 ## Create Line Items for OpenWrap
 
 1. Change the following mandatory settings in `settings.py`:
@@ -103,7 +107,6 @@ If successful, it returns all the orders in your GAM account.
 > **Note:** GAM may warn, "Needs creatives," on the order for ~15 minutes after order creation. This warning is usually incorrect and disappears on its own.
 
 
-## [ADPOD Line Items Setup](docs/adpod_setup.md)
 
 ### More optional settings
 
