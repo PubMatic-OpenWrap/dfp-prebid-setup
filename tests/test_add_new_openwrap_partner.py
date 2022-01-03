@@ -15,6 +15,7 @@ email = 'fakeuser@example.com'
 advertiser = 'My Advertiser'
 advertiser_type = 'ADVERTISER'
 order = 'My Cool Order'
+adpod_order = 's1_1_My Cool Order'
 placements = ['My Site Leaderboard', 'Another Placement']
 ad_units = ['Leaderboard Ad Unit', 'Another Ad Unit']
 lineitem_type = 'PRICE_PRIORITY'
@@ -29,6 +30,17 @@ sizes = [
     'height': '90'
   },
 ]
+
+adpod_creative_size = [
+  {
+    'width': '1',
+    'height': '1'
+  }
+]
+
+adpod_creative_durations = [5,10]
+adpod_slots = [1]
+
 bidder_code = ['mypartner']
 
 @patch.multiple('settings',
@@ -41,7 +53,10 @@ bidder_code = ['mypartner']
   PREBID_BIDDER_CODE=bidder_code,
   OPENWRAP_BUCKET_CSV=price_buckets_csv,  
   DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST=False,
-  CURRENCY_EXCHANGE=False)
+  CURRENCY_EXCHANGE=False,
+  ADPOD_SLOTS=adpod_slots,
+  VIDEO_LENGTHS =adpod_creative_durations
+  )
 @patch('googleads.ad_manager.AdManagerClient.LoadFromStorage')
 class AddNewOpenwrapPartnerTests(TestCase):
 
@@ -77,6 +92,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
 
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_missing_price_bucket_csv(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
@@ -85,9 +101,27 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
 
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  def test_missing_adpod_creative_duration(self, mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    settings.VIDEO_LENGTHS = None
+    with self.assertRaises(MissingSettingException):
+      tasks.add_new_openwrap_partner.main()      
+ 
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  def test_missing_adpod_placement_size_1(self, mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()    
+
   @patch('settings.DFP_CURRENCY_CODE', 'EUR', create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_custom_currency_code(self, mock_input, mock_setup_partners,
     mock_dfp_client):
     """
@@ -99,6 +133,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
 
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='n')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_user_confirmation_rejected(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -109,6 +144,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
 
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='asdf')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_user_confirmation_not_accepted(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -119,6 +155,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
 
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_user_confirmation_accepted(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -130,6 +167,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_NUM_CREATIVES_PER_LINE_ITEM', 5, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_num_duplicate_creatives_from_settings(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -144,6 +182,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_NUM_CREATIVES_PER_LINE_ITEM', None, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_num_duplicate_creatives_no_settings(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -159,6 +198,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('settings.DFP_NUM_CREATIVES_PER_LINE_ITEM', None, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True) 
   def test_num_duplicate_creatives_no_placements(self, mock_input, 
     mock_setup_partners, mock_dfp_client):
     """
@@ -171,11 +211,11 @@ class AddNewOpenwrapPartnerTests(TestCase):
     num_creatives = args[12]
     self.assertEqual(num_creatives, 1)
 
-  @patch('settings.OPENWRAP_CREATIVE_TYPE', constant.IN_APP, create=True)
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
-  def test_openwrap_creative_type_inapp(self, mock_input, mock_load_price_csv,
+  def test_OPENWRAP_SETUP_TYPE_inapp(self, mock_input, mock_load_price_csv,
     mock_setup_partners, mock_dfp_client):
     """
     Make sure we use the default number of creatives per line item if the
@@ -194,7 +234,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check custom targetting
     self.assertEqual(args[15], None)
 
-  @patch('settings.OPENWRAP_CREATIVE_TYPE', constant.IN_APP_VIDEO, create=True)
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP_VIDEO, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -217,11 +257,11 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check custom targetting
     self.assertEqual(args[15], None)
     
-  @patch('settings.OPENWRAP_CREATIVE_TYPE', constant.JW_PLAYER, create=True)
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.JW_PLAYER, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
-  def test_openwrap_creative_type_jwplayer(self, mock_input, mock_load_price_csv,
+  def test_OPENWRAP_SETUP_TYPE_jwplayer(self, mock_input, mock_load_price_csv,
     mock_setup_partners, mock_dfp_client):
     """
     Make sure we use the default number of creatives per line item if the
@@ -240,11 +280,11 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check custom targetting
     self.assertEqual(args[15], None)
 
-  @patch('settings.OPENWRAP_CREATIVE_TYPE', constant.VIDEO, create=True)
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.VIDEO, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
-  def test_openwrap_creative_type_video(self, mock_input, mock_load_price_csv,
+  def test_OPENWRAP_SETUP_TYPE_video(self, mock_input, mock_load_price_csv,
     mock_setup_partners, mock_dfp_client):
     """
     Make sure we use the default number of creatives per line item if the
@@ -257,6 +297,25 @@ class AddNewOpenwrapPartnerTests(TestCase):
     self.assertEqual(args[10], constant.VIDEO)
     #check roadblock type
     self.assertEqual(args[19], 'ONE_OR_MORE')
+
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('tasks.add_new_openwrap_partner.setup_partner')
+  @patch('tasks.add_new_openwrap_partner.load_price_csv')
+  @patch('tasks.add_new_openwrap_partner.input', return_value='y')
+  def test_OPENWRAP_SETUP_TYPE_adpod(self, mock_input, mock_load_price_csv,
+    mock_setup_partners, mock_dfp_client):
+    """
+    Make sure we use the default number of creatives per line item if the
+    setting does not exist.
+    """
+    settings.DFP_PLACEMENT_SIZES = adpod_creative_size
+    tasks.add_new_openwrap_partner.main()
+    args, _ = mock_setup_partners.call_args
+    
+    #check platform
+    self.assertEqual(args[10], constant.ADPOD)
+    #check roadblock type
+    self.assertEqual(args[19], 'ONE_OR_MORE')  
 
   @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
   @patch('tasks.add_new_openwrap_partner.DFPValueIdGetter')
@@ -309,10 +368,10 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                advertiser_type = advertiser_type, order_name=order,
                                                placements=placements, sizes=sizes, lineitem_type = lineitem_type,
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
-                                               creative_type = constant.WEB, creative_template = None, num_creatives=2,
+                                               setup_type = constant.WEB, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=['Desktop'], device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE')
+                                               roadblock_type= 'ONE_OR_MORE',slot = None,adpod_creative_durations=None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -325,7 +384,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       .assert_called_once_with(bidder_code[0], order, 246810,  [{'width': '300', 'height': '250'}, {'width': '728', 'height': '90'}], 2, creative_file='creative_snippet_openwrap.html', prefix='DISPLAY_xyz', safe_frame=False))
     mock_create_creatives.create_creatives.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], creative_type=constant.WEB, size_overrides=[] )
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='WEB', size_overrides=[], slot=None)
 
 
 
@@ -371,10 +430,10 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                advertiser_type = advertiser_type, order_name=order,
                                                placements=placements, sizes=sizes, lineitem_type = lineitem_type,
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
-                                               creative_type = constant.VIDEO, creative_template = None, num_creatives=2,
+                                               setup_type = constant.VIDEO, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE')
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -389,8 +448,70 @@ class AddNewOpenwrapPartnerTests(TestCase):
     mock_create_creative_sets.create_creative_set_config.assert_called_once_with([54321,98765], sizes, 'VIDEO_xyz' )
     mock_create_creative_sets.create_creative_sets.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], creative_type=constant.VIDEO, size_overrides=[])
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='VIDEO', size_overrides=[], slot=None)
 
+
+  @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
+  @patch('tasks.add_new_openwrap_partner.DFPValueIdGetter')
+  @patch('tasks.add_new_openwrap_partner.get_or_create_dfp_targeting_key')
+  @patch('dfp.associate_line_items_and_creatives')
+  @patch('dfp.create_creative_sets')
+  @patch('dfp.create_creatives')
+  @patch('dfp.create_line_items')
+  @patch('tasks.add_new_openwrap_partner.get_unique_id', return_value = 'ADPOD_xyz')
+  @patch('dfp.create_orders')
+  @patch('dfp.get_advertisers')
+  @patch('dfp.get_placements')
+  @patch('dfp.get_users')
+  def test_setup_partner_for_adpod(self, mock_get_users, mock_get_placements,
+    mock_get_advertisers, mock_create_orders, mock_get_unique_id,
+    mock_create_line_items, mock_create_creatives, mock_create_creative_sets, mock_licas, mock_dfp_client,
+    mock_get_or_create_dfp_targeting_key, mock_dfp_value_id_getter, mock_create_line_item_configs):
+    """
+    It calls all expected DFP functions.
+    """
+
+    mock_get_users.get_user_id_by_email = MagicMock(return_value=14523)
+    mock_get_placements.get_placement_ids_by_name = MagicMock(
+      return_value=[1234567, 9876543])
+    mock_get_advertisers.get_advertiser_id_by_name = MagicMock(
+      return_value=246810)
+    mock_create_orders.create_order = MagicMock(return_value=1357913)
+    mock_create_creatives.create_creatives = MagicMock(return_value = [54321,98765])
+    mock_create_creative_sets.create_creative_sets = MagicMock(return_value = [54321,98765])
+    mock_create_line_items.create_line_items = MagicMock(
+      return_value =[543210, 987650])
+
+    prices = [{
+       'start': 5,
+       'end': 10,
+       'granularity': 5,
+       'rate': 5
+    }]
+
+    tasks.add_new_openwrap_partner.setup_partner(user_email=email, advertiser_name=advertiser, 
+                                               advertiser_type = advertiser_type, order_name=order,
+                                               placements=placements, sizes=adpod_creative_size, lineitem_type = lineitem_type,
+                                               lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
+                                               setup_type = constant.ADPOD, creative_template = None, num_creatives=2,
+                                               use_1x1=False, currency_code='USD', custom_targeting= None,
+                                               same_adv_exception= False, device_categories=None, device_capabilities=None, 
+                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10])
+
+    mock_get_users.get_user_id_by_email.assert_called_once_with(email)
+    mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
+      placements)
+    mock_get_advertisers.get_advertiser_id_by_name.assert_called_once_with(
+      advertiser, advertiser_type)
+    mock_create_orders.create_order.assert_called_once_with(adpod_order, 246810,
+      14523)
+    (mock_create_creatives.create_creative_configs_for_adpod
+      .assert_called_once_with(246810, adpod_creative_size, 'ADPOD_xyz', constant.ADPOD_VIDEO_VAST_URL,adpod_creative_durations,'s1'))
+    mock_create_creatives.create_creatives.assert_called_once()
+    mock_create_creative_sets.create_creative_set_config_adpod.assert_called_once_with([54321,98765], adpod_creative_size, 'ADPOD_xyz' , adpod_creative_durations,'s1')
+    mock_create_creative_sets.create_creative_sets.assert_called_once()
+    mock_create_line_items.create_line_items.assert_called_once()
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='ADPOD', size_overrides=[], slot='s1')
 
 
   @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
@@ -442,15 +563,15 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                advertiser_type = advertiser_type, order_name=order,
                                                placements=placements, sizes=sizes, lineitem_type = lineitem_type,
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
-                                               creative_type = constant.IN_APP, creative_template = None, num_creatives=2,
+                                               setup_type = constant.IN_APP, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=['Mobile Apps'], 
-                                               roadblock_type= 'ONE_OR_MORE')
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
-    mock_get_device_capabilities.get_device_capabilities.assert_called_once()
+    mock_get_device_capabilities.get_device_capabilities.assert_called_once()   
     (mock_create_creatives.create_duplicate_creative_configs
       .assert_called_once_with(bidder_code[0], order, 246810,  sizes, 2, creative_file='creative_snippet_openwrap_in_app.html', prefix='INAPP_xyz', safe_frame=False))
-    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], creative_type=constant.IN_APP, size_overrides=[] )
+    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], durations=None, setup_type='IN_APP', size_overrides=[], slot=None)
 
 
 
@@ -506,10 +627,10 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                advertiser_type = advertiser_type, order_name=order,
                                                placements=placements, sizes=sizes, lineitem_type = lineitem_type,
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
-                                               creative_type = constant.IN_APP_VIDEO, creative_template = None, num_creatives=2,
+                                               setup_type = constant.IN_APP_VIDEO, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=['Mobile Apps'], 
-                                               roadblock_type= 'ONE_OR_MORE')
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
     mock_get_device_capabilities.get_device_capabilities.assert_called_once()
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
@@ -525,7 +646,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     mock_create_creative_sets.create_creative_set_config.assert_called_once_with([54321,98765], sizes, 'IN_APP_VIDEO_xyz' )
     mock_create_creative_sets.create_creative_sets.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], creative_type=constant.IN_APP_VIDEO, size_overrides=[])
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='IN_APP_VIDEO', size_overrides=[], slot=None)
 
 
 
@@ -571,16 +692,16 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                advertiser_type = advertiser_type, order_name=order,
                                                placements=placements, sizes=sizes, lineitem_type = lineitem_type,
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
-                                               creative_type = constant.NATIVE, creative_template = None, num_creatives=2,
+                                               setup_type = constant.NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE')
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
     mock_get_creative_template.get_creative_template_ids_by_name.assert_called_once()
     mock_create_creatives.create_creative_configs_for_native.assert_called_once_with(246810,  [123, 456], 2, 'NATIVE_xyz')
     mock_create_creatives.create_creatives.assert_called_once()
     mock_create_line_items.create_line_items.assert_called_once()
-    mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], creative_type=constant.NATIVE, size_overrides=[])
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=None, setup_type='NATIVE', size_overrides=[], slot=None)
 
 
   @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
@@ -617,10 +738,10 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                advertiser_type = advertiser_type, order_name=order,
                                                placements=[], sizes=sizes, lineitem_type = lineitem_type,
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
-                                               creative_type = constant.NATIVE, creative_template = None, num_creatives=2,
+                                               setup_type = constant.NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE')
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
     
     mock_get_root_ad_unit_id.get_root_ad_unit_id.assert_called_once()
     #args, kwargs = mock_create_line_item_configs.call_args
@@ -632,7 +753,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     """
     It creates the expected line item configs.
     """
-
+    
     prices = [{
        'start': 1,
        'end': 2,
@@ -650,7 +771,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                                     placement_ids=[9876543, 1234567], ad_unit_ids=None,
                                                                     bidder_code='iamabiddr', sizes=sizes, key_gen_obj=tasks.add_new_openwrap_partner.OpenWrapTargetingKeyGen(), 
         lineitem_type=lineitem_type, lineitem_prefix = 'abc', 
-        currency_code='HUF', custom_targeting = None, creative_type = constant.WEB, creative_template_ids=None)
+        currency_code='HUF', custom_targeting = None, setup_type = constant.WEB, creative_template_ids=None)
 
     self.assertEqual(len(configs), 2)
 
@@ -674,4 +795,32 @@ class AddNewOpenwrapPartnerTests(TestCase):
     self.assertEqual(len(configs[1]['creativePlaceholders']), 2)
     self.assertEqual(configs[1]['creativePlaceholders'][0]['size'], sizes[0])
     self.assertEqual(configs[1]['creativePlaceholders'][1]['size'], sizes[1])
+  
+  @patch('tasks.add_new_openwrap_partner.get_exchange_rate')
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('dfp.get_network.get_dfp_network')
+  def test_Calculate_price_Adpod(self,mock_dfp_client, mock_get_dfp_network,mock_get_exchange_rate):
+    input=[{
+      'expected': 171,
+      'filename': 'Inline_Header_Bidding_Auto.csv'
+    },
+    {
+      'expected': 201,
+      'filename': 'Inline_Header_Bidding_CTV-Med.csv'
+    },
+    {
+      'expected': 424,
+      'filename': 'Inline_Header_Bidding_Dense.csv'
+    },
+    {
+      'expected': 2000,
+      'filename': 'Inline_Header_Bidding_High.csv'
+    },
+    {
+      'expected': 201,
+      'filename': 'Inline_Header_Bidding_Med.csv'
+    }]
 
+    for inp in input:
+      prices = tasks.add_new_openwrap_partner.load_price_csv(inp['filename'],constant.ADPOD)
+      self.assertEqual(len(prices),inp['expected'],"Expected and generated line items don't match")

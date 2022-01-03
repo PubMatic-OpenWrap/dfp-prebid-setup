@@ -28,16 +28,15 @@ def create_line_items(line_items):
 
 
 def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micro_amount, sizes, key_gen_obj,
-                            lineitem_type='PRICE_PRIORITY',currency_code='USD', creative_type = None, creative_template_ids = None, 
+                            lineitem_type='PRICE_PRIORITY',currency_code='USD', setup_type = None, creative_template_ids = None, 
                             same_adv_exception=False, device_categories=None,
-                            device_capabilities = None,roadblock_type = 'ONE_OR_MORE'):
+                            device_capabilities = None,roadblock_type = 'ONE_OR_MORE', durations = None, slot=None):
   """
   Creates a line item config object.
 
   Args:
     name (str): the name of the line item
     order_id (int): the ID of the order in DFP
-    placement_ids (arr): an array of DFP placement IDs to target
     ad_unit_ids (arr): an array of DFP ad unit IDs to target
     cpm_micro_amount (int): the currency value (in micro amounts) of the
       line item
@@ -46,13 +45,14 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
     key_gen_obj (obj): targeting key gen object
     lineitem_type (str): the type of line item('PRICE_PRIORTY', 'SPONSORSHIP', 'HOUSE' or 'NETWORK')
     currency_code (str): the currency code (e.g. 'USD' or 'EUR')
-    creative_type (str): type of creative, for differentiating native
+    setup_type (str): type of creative, for differentiating native
     creative_template_ids (arr): an array of creative template IDs required for Native
     same_adv_exception (bool) : https://developers.google.com/ad-manager/api/reference/v202102/LineItemService.LineItem.html#disablesameadvertisercompetitiveexclusion
     device_categories
     device_capabilities
     roadblock_type (str) : https://developers.google.com/ad-manager/api/reference/v202102/LineItemService.LineItem.html#roadblockingtype
- 
+    durations: video creative durations in case of setup_type = 'ADPOD'
+    slot: Represent the slot number of the ADPOD.
   Returns:
     an object: the line item config
   """
@@ -61,7 +61,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   creative_placeholders = []
 
  # creative placeholder for native
-  if creative_type == 'NATIVE':
+  if setup_type == 'NATIVE':
     for id in creative_template_ids:
       creative_placeholders.append(
         {
@@ -72,7 +72,13 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
           'creativeTemplateId': id,
           'creativeSizeType': 'NATIVE'
         }
-      )  
+      )
+  elif setup_type == 'ADPOD':
+    for i in range(len(durations)):
+      creative_placeholders.append({
+        'size': sizes[0],
+        'targetingName': "{}_{}second_ad".format(slot,durations[i])
+      })      
   else:
     for size in sizes:
       creative_placeholders.append({
@@ -80,6 +86,17 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
       })
 
   top_set = key_gen_obj.get_dfp_targeting()
+
+  crv_targeting = None
+  if setup_type == 'ADPOD':
+    crv_targeting = []
+    for dur in durations:
+      crv_targeting.append({
+          'name': "{}_{}second_ad".format(slot,dur),
+          'targeting': {
+            'customTargeting': key_gen_obj.get_creative_targeting(dur),
+          }
+      })
 
   # https://developers.google.com/doubleclick-publishers/docs/reference/v201802/LineItemService.LineItem
   line_item_config = {
@@ -108,7 +125,8 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
       'goalType': 'NONE'
     },
     'creativePlaceholders': creative_placeholders,
-    'disableSameAdvertiserCompetitiveExclusion': same_adv_exception
+    'disableSameAdvertiserCompetitiveExclusion': same_adv_exception,
+    'creativeTargetings': crv_targeting
   }
 
   #for network and house line-items, set goal type and units
@@ -144,10 +162,10 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   if ad_unit_ids is not None:
     line_item_config['targeting']['inventoryTargeting']['targetedAdUnits'] = [{'adUnitId': id} for id in ad_unit_ids]
 
-  if creative_type in ('VIDEO', 'JWPLAYER', 'IN_APP_VIDEO'):
+  if setup_type in ('VIDEO', 'JWPLAYER', 'IN_APP_VIDEO', 'ADPOD'):
     line_item_config['environmentType'] = 'VIDEO_PLAYER'
 
-    if creative_type in ('VIDEO', 'JWPLAYER'):
+    if setup_type in ('VIDEO', 'JWPLAYER', 'ADPOD'):
       line_item_config['videoMaxDuration'] = 60000
       line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['VIDEO_PLAYER']}
     else:  # creative type is IN_APP_VIDEO

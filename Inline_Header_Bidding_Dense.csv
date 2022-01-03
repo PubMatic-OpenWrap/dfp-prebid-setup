@@ -1,0 +1,5 @@
+order_name,advertiser,start_range,end_range,granularity,"rate_id[1=Average, 2=Minimum] "
+PubMatic_CSAPI_test,PubMatic,0.01,3,0.01,2
+PubMatic_CSAPI_test,PubMatic,3,8,0.05,2
+PubMatic_CSAPI_test,PubMatic,8,20,0.5,2
+PubMatic_CSAPI_test,PubMatic,20,999,-1,2

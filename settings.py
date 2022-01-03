@@ -8,7 +8,10 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 # DFP SETTINGS
 #########################################################################
 
-# A string describing the order
+# A string describing the order.
+# For ADPOD setup, separate order wil be created for lineitems of each slot. 
+# Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
+# Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will s1_1_test_order_name,  s2_1_test_order_name for 1st and 2nd slot of adpod
 DFP_ORDER_NAME = 'test_order_name'
 
 # The email of the DFP user who will be the trafficker for
@@ -38,6 +41,7 @@ DFP_TARGETED_PLACEMENT_NAMES = []
 DFP_TARGETED_AD_UNIT_NAMES = []
 
 # Sizes of placements. These are used to set line item and creative sizes.
+# In case of  OPENWRAP_SETUP_TYPE = "ADPOD" only one size object is permitted, which will be applicable to all the creatives and line items for all the slots of Adpod.
 DFP_PLACEMENT_SIZES = [
   {
     'width': '300',
@@ -136,15 +140,16 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 #]
 
 # OpenWrap Creative Type
-#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "NATIVE", "VIDEO", "JWPLAYER"
+#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
 #  Defaults to WEB
-#OPENWRAP_CREATIVE_TYPE = "WEB"
+#OPENWRAP_SETUP_TYPE = "WEB"
 
 # OpenWrap Use 1x1 Creative
 #  If true, will create creatives with 1x1 and size overrides
 #    to the sizes configured
 #  Defaults to False
 # Not applicable for native, since native creative is always created with 1x1 size
+# Not applicable for ADPOD
 #OPENWRAP_USE_1x1_CREATIVE = True
 
 # Creative Template
@@ -158,6 +163,24 @@ OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 # Like the existing tool, default value is True for all platforms
 # and you can set it to false for WEB, WEB_SAFEFRAME and NATIVE only
 CURRENCY_EXCHANGE = False
+
+# Optional
+# OPENWRAP VIDEO_LENGTHS 
+# This parameter is to set the duration of video ads creatives in seconds.
+# Ex VIDEO_LENGTHS = [10,15] will create 2 creatives with durations 10 and 15 seconds per ad slot.
+# Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
+# This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
+# Represents the video length parameter on UI.
+VIDEO_LENGTHS = [10,15]
+
+#Optional
+#OpenWrap ADPOD_SLOTS
+# This option is to set the slot in a single ADPOD.
+# Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
+# ex ADPOD_SLOTS = [1,2,3], will create 1st, 2nd and 3rd slot of adpod
+# ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
+# Slot numbers should be in incremental order.
+ADPOD_SLOTS = [1,2,3]
 
 #########################################################################
 

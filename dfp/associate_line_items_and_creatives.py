@@ -7,13 +7,15 @@ from dfp.client import get_client
 
 logger = logging.getLogger(__name__)
 
-def make_licas(line_item_ids, creative_ids, size_overrides=[], creative_type= None):
+def make_licas(line_item_ids, creative_ids, size_overrides=[], setup_type= None, slot=None,durations=None):
   """
   Attaches creatives to line items in DFP.
 
   Args:
     line_item_ids (arr): an array of line item IDs
     creative_ids (arr): an array of creative IDs
+    slot(string): slot name in case of setup_type = ADPOD
+    durations(int array): creative durations for ADPOD.
   Returns:
     None
   """
@@ -29,7 +31,7 @@ def make_licas(line_item_ids, creative_ids, size_overrides=[], creative_type= No
   licas = []
 
   #set creativeSetId for video line items
-  if creative_type in ('JWPLAYER', 'VIDEO', 'IN_APP_VIDEO'):
+  if setup_type in ('JWPLAYER', 'VIDEO', 'IN_APP_VIDEO'):
     for line_item_id in line_item_ids:
       for creative_id in creative_ids:
         licas.append({
@@ -37,6 +39,15 @@ def make_licas(line_item_ids, creative_ids, size_overrides=[], creative_type= No
           'lineItemId': line_item_id,
           'sizes': sizes
         })
+  elif setup_type == 'ADPOD':
+    for line_item_id in line_item_ids:
+      for i in range(len(creative_ids)):
+        licas.append({
+          'creativeSetId': creative_ids[i],
+          'lineItemId': line_item_id,
+          'sizes': sizes,
+          'targetingName':"{}_{}second_ad".format(slot,durations[i])
+        })      
   else:
     for line_item_id in line_item_ids:
       for creative_id in creative_ids:
