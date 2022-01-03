@@ -24,7 +24,8 @@
 For Adpod setup use/edit one of the following csv files present in `dfp-prebid-setup`  folder for `OPENWRAP_BUCKET_CSV` parameter 
 
  ***Note: Ignore the Order Name and Advertiser columns are in the CSV file. Specify those settings in, settings.py ***
-
+ ***In the line item csv files the `rate_id` value should always be `2 (minimum)` for Adpod setup***
+ 
 |  Price Granularity | CSV File |
 |--|--|
 | Auto  | Inline_Header_Bidding_Auto |
