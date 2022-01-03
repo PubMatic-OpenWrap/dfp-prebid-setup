@@ -16,7 +16,7 @@
 |`DFP_PLACEMENT_SIZES`| Represents creative placement sizes. Add only one size object which will be used for all creatives. <br> Ex `DFP_PLACEMENT_SIZES =[{'width': '1','height': '1'}]` will be used for creatives sizes. | object |
 |`VIDEO_LENGTHS`| Adpod video creative durations.<br> Ex `VIDEO_LENGTHS = [5,10,15]` will create creatives  with durations 5, 10 and 15 secs for each slot of Adpod. | integer array|
 |`PREBID_BIDDER_CODE` | Bidder codes to target bidders with one line item. <br>Ex `PREBID_BIDDER_CODE = ['pubmatic']`. This parameter is mandatory for bidder level reporting. Set to `None` to generate line items for all partners.   | string array|
-|`OPENWRAP_BUCKET_CSV` | Set this to one of the cvs file mentioned in ` Inline Header Bidding  csv` table  below. This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item..| string |
+|`OPENWRAP_BUCKET_CSV` | Set this to one of the csv file mentioned in ` Inline Header Bidding  csv` table  below. This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item..| string |
 
 
 
