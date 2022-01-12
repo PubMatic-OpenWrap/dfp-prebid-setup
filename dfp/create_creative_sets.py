@@ -24,7 +24,7 @@ def create_creative_sets(creative_sets):
 
     dfp_client = get_client()
     creative_set_service = dfp_client.GetService('CreativeSetService',
-                                           version='v202102')
+                                           version='v202111')
     creative_set_ids = []
     for creative_set in creative_sets:
         creative_set = creative_set_service.createCreativeSet(creative_set)
