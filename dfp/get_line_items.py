@@ -19,7 +19,7 @@ def get_line_item_count_by_order(order_id):
     int : count of line itms in order
   """
   dfp_client = get_client()
-  line_item_service = dfp_client.GetService('LineItemService', version='v202102')
+  line_item_service = dfp_client.GetService('LineItemService', version='v202111')
 
    # Filter by order.
   query = 'WHERE orderId = :orderId'
