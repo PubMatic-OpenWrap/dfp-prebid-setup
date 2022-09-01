@@ -835,8 +835,6 @@ def get_dfp_network():
     return current_network
 
 def get_exchange_rate(currency_code):
-    if currency_code.upper() == "USD":
-        return float(1)
     #currency_code = 'GBP'
     url = "http://api.currencylayer.com/live?access_key=55586212cb183ad61a879b07d76e1d47&source=USD&currencies=" + currency_code +"&format=1"
 
