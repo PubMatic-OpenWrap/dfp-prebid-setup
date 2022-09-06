@@ -188,4 +188,4 @@ ADPOD_SLOTS = [1,2,3]
 try:
     from local_settings import *
 except ImportError:
-    pass
+  pass
