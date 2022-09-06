@@ -3,7 +3,6 @@
 
 import logging
 import os
-import re
 import sys
 from builtins import input
 from pprint import pprint
@@ -74,10 +73,9 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
     def set_bidder_value(self, bidder_code):
         print("Setting bidder value to {0}".format(bidder_code))
 
-        if bidder_code == None:
-            self.bidder_criteria = None
-            return
-
+        if bidder_code is None:
+          self.bidder_criteria=None
+          return
         self.hb_bidder_value_id = self.HBBidderValueGetter.get_value_id(bidder_code)
         return self.hb_bidder_value_id
 
@@ -90,12 +88,21 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
       # https://github.com/googleads/googleads-python-lib/blob/master/examples/dfp/v201802/line_item_service/target_custom_criteria.py
       # create custom criterias
 
-      hb_bidder_criteria = {
+      top_set = {
+        'xsi_type': 'CustomCriteriaSet',
+        'logicalOperator': 'AND',
+        'children': []
+      }
+      
+      if self.hb_bidder_value_id is not None:
+        hb_bidder_criteria = {
         'xsi_type': 'CustomCriteria',
         'keyId': self.hb_bidder_key_id,
         'valueIds': [self.hb_bidder_value_id],
         'operator': 'IS'
-      }
+        }
+        top_set['children'].append(hb_bidder_criteria)
+
 
       hb_pb_criteria = {
         'xsi_type': 'CustomCriteria',
@@ -104,15 +111,10 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
         'operator': 'IS'
       }
 
+      top_set['children'].append(hb_pb_criteria)
       # The custom criteria will resemble:
       # (hb_bidder_criteria.key == hb_bidder_criteria.value AND
       #    hb_pb_criteria.key == hb_pb_criteria.value)
-      top_set = {
-        'xsi_type': 'CustomCriteriaSet',
-        'logicalOperator': 'AND',
-        'children': []
-      }
-
       return top_set
 
 def setup_partner(user_email, advertiser_name, order_name, placements, ad_units, sizes, bidder_code, prices,
@@ -124,11 +126,13 @@ def setup_partner(user_email, advertiser_name, order_name, placements, ad_units,
   # Get the user.
   user_id = dfp.get_users.get_user_id_by_email(user_email)
 
- # Get the placement IDs.
+   # Get the placement IDs and ad_unit IDs.
   placement_ids = None 
   ad_unit_ids = None
   if len(placements) > 0:
       placement_ids = dfp.get_placements.get_placement_ids_by_name(placements)
+  elif len(ad_units) > 0:
+    ad_unit_ids=dfp.get_ad_units.get_ad_unit_by_name(ad_units)
   else:
       # Run of network
       root_id = dfp.get_root_ad_unit_id.get_root_ad_unit_id()
@@ -138,19 +142,12 @@ def setup_partner(user_email, advertiser_name, order_name, placements, ad_units,
   advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
     advertiser_name)
 
-  #if bidder is None, then bidder will be 'All'
-  bidder_str = bidder_code
-  if bidder_str == None:
-      bidder_str = "All"
-  elif isinstance(bidder_str, (list, tuple)):
-      bidder_str = "_".join(bidder_str)
-
   # Create the order.
   order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
 
   # Create creatives.
   creative_configs = dfp.create_creatives.create_duplicate_creative_configs(
-      bidder_str, order_name, advertiser_id, num_creatives=num_creatives)
+      bidder_code, order_name, advertiser_id, num_creatives=num_creatives)
   creative_ids = dfp.create_creatives.create_creatives(creative_configs)
 
   # Create line items.
@@ -199,15 +196,6 @@ def create_line_item_configs(prices, order_id, placement_ids, ad_unit_ids, bidde
   for price in prices:
 
     price_str = num_to_str(micro_amount_to_num(price))
-
-    if re.match("\d+\.\d{2}0",price_str):
-       price_str = price_str[0:-1]
-
-    bidder_str = bidder_code
-    if bidder_str == None:
-       bidder_str = "All"
-    elif isinstance(bidder_str, (list, tuple)):
-       bidder_str = "_".join(bidder_str)
 
     # Autogenerate the line item name.
     line_item_name = u'{bidder_code}: HB ${price}'.format(
@@ -299,29 +287,9 @@ def main():
   if order_name is None:
     raise MissingSettingException('DFP_ORDER_NAME')
 
-  #placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', [])
+  placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', [])
+  ad_units = getattr(settings, 'DFP_TARGETED_AD_UNIT_NAMES', [])
 
-  num_placements = 0
-  placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', None)
-  placements_print = str(placements)
-  if placements is None:
-    placements = []
-    placements_print = "RON"
-
-  # if no placements are specified, we wil do run of network which is
-  #   effectively one placement
-  num_placements = len(placements)
-  if num_placements == 0:
-      num_placements = 1
-      placements_print = "RON"
-
-  ad_units = getattr(settings, 'DFP_TARGETED_AD_UNIT_NAMES', None)
-
-  #if ad_units is None and placements is None:
-   # raise MissingSettingException('DFP_TARGETED_PLACEMENT_NAMES or DFP_TARGETED_AD_UNIT_NAMES')
-  #elif (placements is None or len(placements) < 1) and (ad_units is None or len(ad_units) < 1):
-   # raise BadSettingException('The setting "DFP_TARGETED_PLACEMENT_NAMES" or "DFP_TARGETED_AD_UNIT_NAMES" '
-    #  'must contain at least one DFP placement or ad unit.')
 
   sizes = getattr(settings, 'DFP_PLACEMENT_SIZES', None)
   if sizes is None:
@@ -337,13 +305,11 @@ def main():
   # https://github.com/kmjennison/dfp-prebid-setup/issues/13
   num_creatives = (
     getattr(settings, 'DFP_NUM_CREATIVES_PER_LINE_ITEM', None) or
-    num_placements
+    len(placements)
   )
 
   bidder_code = getattr(settings, 'PREBID_BIDDER_CODE', None)
-  #if bidder_code is None:
-   # raise MissingSettingException('PREBID_BIDDER_CODE')
-  if bidder_code is not None and not isinstance(bidder_code, (list, tuple, str)):
+  if bidder_code is not None and not isinstance(bidder_code,(str)):
     raise BadSettingException('PREBID_BIDDER_CODE')
 
   price_buckets = getattr(settings, 'PREBID_PRICE_BUCKETS', None)

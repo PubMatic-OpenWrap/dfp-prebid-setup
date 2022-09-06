@@ -12,11 +12,11 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 # For ADPOD setup, separate order wil be created for lineitems of each slot. 
 # Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
 # Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will s1_1_test_order_name,  s2_1_test_order_name for 1st and 2nd slot of adpod
-DFP_ORDER_NAME = 'testavi8'
+DFP_ORDER_NAME = 'test_order_name'
 
 # The email of the DFP user who will be the trafficker for
 # the created order
-DFP_USER_EMAIL_ADDRESS = 'test.dfp.sandbox@gmail.com'
+DFP_USER_EMAIL_ADDRESS = 'testuser@email.com'
 
 # The exact name of the DFP advertiser for the created order
 # Set 'PubMatic' for openwrap Line items
@@ -122,8 +122,8 @@ PREBID_BIDDER_CODE = None
 PREBID_PRICE_BUCKETS = {
   'precision': 2,
   'min' : 0,
-  'max' : 5,
-  'increment': 1,
+  'max' : 20,
+  'increment': 0.10,
 }
 
 # OpenWrap: Buckets are specified in a CSV file
