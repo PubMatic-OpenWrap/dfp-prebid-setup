@@ -20,6 +20,7 @@ import dfp.get_advertisers
 import dfp.get_custom_targeting
 import dfp.get_placements
 import dfp.get_users
+import dfp.get_root_ad_unit_id
 from dfp.exceptions import (
   BadSettingException,
   MissingSettingException
@@ -71,6 +72,10 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
 
     def set_bidder_value(self, bidder_code):
         print("Setting bidder value to {0}".format(bidder_code))
+
+        if bidder_code is None:
+          self.bidder_criteria=None
+          return
         self.hb_bidder_value_id = self.HBBidderValueGetter.get_value_id(bidder_code)
         return self.hb_bidder_value_id
 
@@ -83,12 +88,22 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
       # https://github.com/googleads/googleads-python-lib/blob/master/examples/dfp/v201802/line_item_service/target_custom_criteria.py
       # create custom criterias
 
-      hb_bidder_criteria = {
+      top_set = {
+        'xsi_type': 'CustomCriteriaSet',
+        'logicalOperator': 'AND',
+        'children': []
+      }
+        
+
+      if self.hb_bidder_value_id is not None:
+        hb_bidder_criteria = {
         'xsi_type': 'CustomCriteria',
         'keyId': self.hb_bidder_key_id,
         'valueIds': [self.hb_bidder_value_id],
         'operator': 'IS'
-      }
+        }
+        top_set['children'].append(hb_bidder_criteria)
+
 
       hb_pb_criteria = {
         'xsi_type': 'CustomCriteria',
@@ -97,15 +112,10 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
         'operator': 'IS'
       }
 
+      top_set['children'].append(hb_pb_criteria)
       # The custom criteria will resemble:
       # (hb_bidder_criteria.key == hb_bidder_criteria.value AND
       #    hb_pb_criteria.key == hb_pb_criteria.value)
-      top_set = {
-        'xsi_type': 'CustomCriteriaSet',
-        'logicalOperator': 'AND',
-        'children': [hb_bidder_criteria, hb_pb_criteria]
-      }
-
       return top_set
 
 def setup_partner(user_email, advertiser_name, order_name, placements, ad_units, sizes, bidder_code, prices,
@@ -117,11 +127,17 @@ def setup_partner(user_email, advertiser_name, order_name, placements, ad_units,
   # Get the user.
   user_id = dfp.get_users.get_user_id_by_email(user_email)
 
-  # Get the placement IDs.
-  placement_ids = dfp.get_placements.get_placement_ids_by_name(placements)
-
-  # Get the ad unit IDs.
-  ad_unit_ids = dfp.get_ad_units.get_ad_unit_ids_by_name(ad_units)
+   # Get the placement IDs and ad_unit IDs.
+  placement_ids = None 
+  ad_unit_ids = None
+  if len(placements) > 0:
+      placement_ids = dfp.get_placements.get_placement_ids_by_name(placements)
+  elif len(ad_units) > 0:
+    ad_unit_ids=dfp.get_ad_units.get_ad_unit_by_name(ad_units)
+  else:
+      # Run of network
+      root_id = dfp.get_root_ad_unit_id.get_root_ad_unit_id()
+      ad_unit_ids = [ root_id ]
 
   # Get (or potentially create) the advertiser.
   advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
@@ -275,11 +291,6 @@ def main():
   placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', [])
   ad_units = getattr(settings, 'DFP_TARGETED_AD_UNIT_NAMES', [])
 
-  if ad_units is None and placements is None:
-    raise MissingSettingException('DFP_TARGETED_PLACEMENT_NAMES or DFP_TARGETED_AD_UNIT_NAMES')
-  elif (placements is None or len(placements) < 1) and (ad_units is None or len(ad_units) < 1):
-    raise BadSettingException('The setting "DFP_TARGETED_PLACEMENT_NAMES" or "DFP_TARGETED_AD_UNIT_NAMES" '
-      'must contain at least one DFP placement or ad unit.')
 
   sizes = getattr(settings, 'DFP_PLACEMENT_SIZES', None)
   if sizes is None:
@@ -299,8 +310,8 @@ def main():
   )
 
   bidder_code = getattr(settings, 'PREBID_BIDDER_CODE', None)
-  if bidder_code is None:
-    raise MissingSettingException('PREBID_BIDDER_CODE')
+  if bidder_code is not None and not isinstance(bidder_code,(str)):
+    raise BadSettingException('PREBID_BIDDER_CODE')
 
   price_buckets = getattr(settings, 'PREBID_PRICE_BUCKETS', None)
   if price_buckets is None:
