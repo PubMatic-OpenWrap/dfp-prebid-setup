@@ -132,7 +132,7 @@ def setup_partner(user_email, advertiser_name, order_name, placements, ad_units,
   ad_unit_ids = None
   if len(placements) > 0:
       placement_ids = dfp.get_placements.get_placement_ids_by_name(placements)
-  elif len(ad_units) > 0:
+  if len(ad_units) > 0:
     ad_unit_ids=dfp.get_ad_units.get_ad_unit_by_name(ad_units)
   else:
       # Run of network
