@@ -60,11 +60,11 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
         super().__init__()
 
         # Get DFP key IDs for line item targeting.
-        self.hb_bidder_key_id = get_or_create_dfp_targeting_key('hb_bidder')
+        
         self.hb_pb_key_id = get_or_create_dfp_targeting_key('hb_pb')
 
         # Instantiate DFP targeting value ID getters for the targeting keys.
-        self.HBBidderValueGetter = DFPValueIdGetter('hb_bidder')
+        
         self.HBPBValueGetter = DFPValueIdGetter('hb_pb')
 
         self.hb_bidder_value_id = None
@@ -76,6 +76,11 @@ class PrebidTargetingKeyGen(TargetingKeyGen):
         if bidder_code is None:
           self.bidder_criteria=None
           return
+
+        #get hb_bidder_key only when bidder code is not None
+        self.hb_bidder_key_id = get_or_create_dfp_targeting_key('hb_bidder')
+        self.HBBidderValueGetter = DFPValueIdGetter('hb_bidder')
+
         self.hb_bidder_value_id = self.HBBidderValueGetter.get_value_id(bidder_code)
         return self.hb_bidder_value_id
 
@@ -199,7 +204,13 @@ def create_line_item_configs(prices, order_id, placement_ids, ad_unit_ids, bidde
     price_str = num_to_str(micro_amount_to_num(price))
 
     # Autogenerate the line item name.
-    line_item_name = u'{bidder_code}: HB ${price}'.format(
+    if bidder_code==None:
+      line_item_name = u'{bidder_code}: HB ${price}'.format(
+      bidder_code='Top Bid',
+      price=price_str
+    )
+    else:
+      line_item_name = u'{bidder_code}: HB ${price}'.format(
       bidder_code=bidder_code,
       price=price_str
     )
