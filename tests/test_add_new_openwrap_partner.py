@@ -123,7 +123,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
-  def test_missing_adpod_contains_atleast_one_slot(self, mock_dfp_client):
+  def test_missing_adpod_slot_empty(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
     """
@@ -141,7 +141,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()      
  
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
-  def test_missing_adpod_creative_contain_atleast_one_duration(self, mock_dfp_client):
+  def test_missing_adpod_duration_empty(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
     """
@@ -168,7 +168,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()    
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.WEB, create=True)
-  def test_wrong_placement_size_in_other_than_native(self,mock_dfp_client):
+  def test_wrong_placement_size_in_WEB_setup_type(self,mock_dfp_client):
     """
     It throws an exception with a Bad setting.
     """
@@ -277,7 +277,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()
   
 
-  def test_validate_CSVValues_can_not_negative(self,mock_dfp_client):
+  def test_validate_CSVValues_Negative(self,mock_dfp_client):
     """
     It throws an exception with start range and end range can not be negative.
     """
@@ -291,14 +291,14 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(BadSettingException):
       tasks.add_new_openwrap_partner.validateCSVValues(4,1,1,1)
 
-  def test_validate_CSVValues_rate_id_can_1_or_2(self,mock_dfp_client):
+  def test_validate_CSVValues_invalid_rate_ID(self,mock_dfp_client):
     """
     It throws an exception with Rate id can only be 1 or 2.
     """
     with self.assertRaises(BadSettingException):
       tasks.add_new_openwrap_partner.validateCSVValues(1,5,1,3)
   
-  def test_validate_CSVValues_Start_range_can_not_be_less_than_0_point_01_for_granularity_0_point_01(self,mock_dfp_client):
+  def test_validate_CSVValues_invalid_start_range_and_price_granularity(self,mock_dfp_client):
     """
     It throws an exception with Start range can not be less than 0.01 for granularity 0.01.
     """
@@ -312,7 +312,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(BadSettingException):
       tasks.add_new_openwrap_partner.validateCSVValues(1,1000,1,1)
   
-  def test_validate_CSVValues_0_is_not_accepted_as_granularity(self,mock_dfp_client):
+  def test_validate_CSVValues_invalid_granularity(self,mock_dfp_client):
     """
     It throws an exception with Zero is not accepted as granularity.
     """
