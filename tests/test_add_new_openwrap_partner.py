@@ -81,7 +81,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
 
-  def test_missing_advertiser_type(self,mock_dfp_client):
+  def test_wrong_advertiser_type(self,mock_dfp_client):
     """
     It throws an exception with a Bad setting.
     """
@@ -160,7 +160,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()      
  
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
-  def test_missing_adpod_placement_size_1(self, mock_dfp_client):
+  def test_wrong_adpod_placement_size_1(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
     """
@@ -1012,22 +1012,22 @@ class AddNewOpenwrapPartnerTests(TestCase):
    
   
   def test_get_creative_file_for_web_safeframe(self,mock_dfp_client):
-    expected_value= tasks.add_new_openwrap_partner.get_creative_file(constant.WEB_SAFEFRAME)
-    self.assertEqual(expected_value,"creative_snippet_openwrap_sf.html")
+    actual_value= tasks.add_new_openwrap_partner.get_creative_file(constant.WEB_SAFEFRAME)
+    self.assertEqual(actual_value,"creative_snippet_openwrap_sf.html")
 
   def test_get_creative_file_for_amp(self,mock_dfp_client):
-    expected_value= tasks.add_new_openwrap_partner.get_creative_file(constant.AMP)
-    self.assertEqual(expected_value,"creative_snippet_openwrap_amp.html")
+    actual_value= tasks.add_new_openwrap_partner.get_creative_file(constant.AMP)
+    self.assertEqual(actual_value,"creative_snippet_openwrap_amp.html")
 
   def test_process_price_bucket_sub_granu_0_point_01(self,mock_dfp_client):
     actual=obj.process_price_bucket(1,1.1,0.05)
     self.assertEqual(actual,['1.00', '1.01', '1.02', '1.03', '1.04', '1.05', '1.06', '1.07', '1.08', '1.09'])
   
-  def test_process_price_bucket_else_1_case(self,mock_dfp_client):
+  def test_process_price_bucket_r_is_greater_than_0(self,mock_dfp_client):
     actual=obj.process_price_bucket(1,1.05,0.25)
     self.assertEqual(actual,['1.00', '1.01', '1.02', '1.03', '1.04'])
   
-  def test_process_price_bucket_else_2_case(self,mock_dfp_client):
+  def test_process_price_bucket_k_is_equal_to_0(self,mock_dfp_client):
     actual=obj.process_price_bucket(0,1.05,0.25)
     self.assertEqual(actual,['0.01', '0.02', '0.03', '0.04', '0.05', '0.06', '0.07', '0.08', '0.09', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.00', '1.01', '1.02', '1.03', '1.04'])
 
