@@ -1,16 +1,20 @@
 
+from ast import Constant
 from unittest import TestCase
 
 from mock import MagicMock, patch
+import json
+from unittest.mock import patch
 
 import constant
 import settings
 import tasks.add_new_openwrap_partner
+from tasks.dfp_utils import TargetingKeyGen
 from dfp.exceptions import BadSettingException, MissingSettingException
 from tasks.price_utils import (
   get_prices_array,
 )
-
+obj =tasks.add_new_openwrap_partner.OpenWrapTargetingKeyGen()
 email = 'fakeuser@example.com'
 advertiser = 'My Advertiser'
 advertiser_type = 'ADVERTISER'
@@ -46,6 +50,7 @@ bidder_code = ['mypartner']
 @patch.multiple('settings',
   DFP_USER_EMAIL_ADDRESS=email,
   DFP_ADVERTISER_NAME=advertiser,
+  DFP_ADVERTISER_TYPE=advertiser_type,
   DFP_ORDER_NAME=order,
   DFP_TARGETED_PLACEMENT_NAMES=placements,
   DFP_LINEITEM_TYPE=lineitem_type,
@@ -76,6 +81,14 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
 
+  def test_wrong_advertiser_type(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    settings.DFP_ADVERTISER_TYPE = ['ADVERTISER','AD_NETWORK']  
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()
+    
   def test_missing_order_setting(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
@@ -92,6 +105,14 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
 
+  @patch('settings.OPENWRAP_SETUP_TYPE', 'abcd', create=True)
+  def test_wrong_setup_type(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()
+
   @patch('settings.OPENWRAP_SETUP_TYPE', None, create=True)
   def test_missing_price_bucket_csv(self, mock_dfp_client):
     """
@@ -100,6 +121,15 @@ class AddNewOpenwrapPartnerTests(TestCase):
     settings.OPENWRAP_BUCKET_CSV = None
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()
+
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  def test_missing_adpod_slot_empty(self, mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    settings.ADPOD_SLOTS=[]
+    with self.assertRaises(MissingSettingException):
+      tasks.add_new_openwrap_partner.main()     
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
   def test_missing_adpod_creative_duration(self, mock_dfp_client):
@@ -111,13 +141,246 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()      
  
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
-  def test_missing_adpod_placement_size_1(self, mock_dfp_client):
+  def test_missing_adpod_duration_empty(self, mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    settings.VIDEO_LENGTHS=[]
+    with self.assertRaises(MissingSettingException):
+      tasks.add_new_openwrap_partner.main()      
+  
+
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.WEB, create=True)
+  def test_missing_placement_size_in_other_than_native(self,mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    settings.DFP_PLACEMENT_SIZES= None
+    with self.assertRaises(MissingSettingException):
+      tasks.add_new_openwrap_partner.main()      
+ 
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  def test_wrong_adpod_placement_size_1(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
     """
     with self.assertRaises(BadSettingException):
       tasks.add_new_openwrap_partner.main()    
 
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.WEB, create=True)
+  def test_wrong_placement_size_in_WEB_setup_type(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    settings.DFP_PLACEMENT_SIZES= []
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.NATIVE, create=True)
+  def test_missing_creative_template(self,mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    settings.OPENWRAP_CREATIVE_TEMPLATE= None
+    with self.assertRaises(MissingSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.NATIVE, create=True)
+  def test_wrong_creative_template(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    settings.OPENWRAP_CREATIVE_TEMPLATE= int(1)
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  
+  def test_wrong_bidder_code_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    settings.PREBID_BIDDER_CODE= int(1)
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.DFP_SAME_ADV_EXCEPTION',1,create=True)
+  def test_wrong_same_adv_exception_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.DFP_DEVICE_CATEGORIES',1,create=True)
+  def test_wrong_device_catagories_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.DFP_ROADBLOCK_TYPE','test',create=True)
+  def test_wrong_roadbloack_type_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()  
+  
+  @patch('settings.LINE_ITEM_PREFIX',1,create=True)
+  def test_wrong_lineitem_prefix_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.OPENWRAP_USE_1x1_CREATIVE',1,create=True)
+  def test_wrong_use_1x1_creative_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING',1,create=True)
+  def test_wrong_custom_targeting_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()
+
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING',[("a", "IS", (1,2,3),1), ("b", "IS_NOT", ("4", "5", "6"))],create=True)
+  def test_wrong_custom_targeting_length_setting(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()
+
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING',[("a", "TEST", ("1","2","3")), ("b", "TEST1", ("4", "5", "6"))],create=True)
+  def test_wrong_custom_targeting_IS_and_IS_NOT(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main() 
+
+
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING',[("a", "IS", (1)), ("b", "IS_NOT", (4))],create=True)
+  def test_wrong_custom_targeting_instance(self,mock_dfp_client):
+    """
+    It throws an exception with a Bad setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()
+  
+
+  def test_validate_CSVValues_Negative(self,mock_dfp_client):
+    """
+    It throws an exception with start range and end range can not be negative.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(-1,-2,1,1)
+
+  def test_validate_CSVValues_start_range_more_than_end_range(self,mock_dfp_client):
+    """
+    It throws an exception with Start range can not be more than end range.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(4,1,1,1)
+
+  def test_validate_CSVValues_invalid_rate_ID(self,mock_dfp_client):
+    """
+    It throws an exception with Rate id can only be 1 or 2.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(1,5,1,3)
+  
+  def test_validate_CSVValues_invalid_start_range_and_price_granularity(self,mock_dfp_client):
+    """
+    It throws an exception with Start range can not be less than 0.01 for granularity 0.01.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(0.001,5,0.01,2)
+
+  def test_validate_CSVValues_End_range_can_not_be_more_than_999(self,mock_dfp_client):
+    """
+    It throws an exception with End range can not be more than 999.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(1,1000,1,1)
+  
+  def test_validate_CSVValues_invalid_granularity(self,mock_dfp_client):
+    """
+    It throws an exception with Zero is not accepted as granularity.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(1,5,0,1)
+
+ 
+  @patch('dfp.get_orders.get_order_by_name',return_value={
+               'id': 1234567,
+               'order_count': 1,
+               'lic': 10,
+               'name': 'test_order_name'
+           } )
+  @patch('dfp.get_line_items.get_line_item_count_by_order',return_value=10)
+  def test_get_exixting_order_details(self,mock_dfp_client,mock_order_name,mock_lic):
+   
+    actual=tasks.add_new_openwrap_partner.get_existing_order_details('test','order_name')
+    self.assertGreater(constant.LINE_ITEMS_LIMIT,actual['lic'])
+
+  
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_WEB(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.WEB)
+    expected_uid=u'DISPLAY_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+  
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_AMP(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.AMP)
+    expected_uid=u'AMP_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+  
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_IN_APP(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.IN_APP)
+    expected_uid=u'INAPP_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+  
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_IN_APP_VIDEO(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.IN_APP_VIDEO)
+    expected_uid=u'INAPP_VIDEO_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+  
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_NATIVE(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.NATIVE)
+    expected_uid=u'NATIVE_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_VIDEO(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.VIDEO)
+    expected_uid=u'VIDEO_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+  
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_JWP(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.JW_PLAYER)
+    expected_uid=u'JWP_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+
+  @patch('shortuuid.uuid',return_value=1234)
+  def test_get_unique_id_ADPOD(self,mock_dfp_client,mock_uuid):
+    actual_uid=tasks.add_new_openwrap_partner.get_unique_id(constant.ADPOD)
+    expected_uid=u'VIDEO_{}'.format('1234')
+    self.assertEqual(actual_uid,expected_uid)
+  
   @patch('settings.DFP_CURRENCY_CODE', 'EUR', create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -747,6 +1010,26 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #args, kwargs = mock_create_line_item_configs.call_args
     #self.assertEqual(args[12], None)
    
+  
+  def test_get_creative_file_for_web_safeframe(self,mock_dfp_client):
+    actual_value= tasks.add_new_openwrap_partner.get_creative_file(constant.WEB_SAFEFRAME)
+    self.assertEqual(actual_value,"creative_snippet_openwrap_sf.html")
+
+  def test_get_creative_file_for_amp(self,mock_dfp_client):
+    actual_value= tasks.add_new_openwrap_partner.get_creative_file(constant.AMP)
+    self.assertEqual(actual_value,"creative_snippet_openwrap_amp.html")
+
+  def test_process_price_bucket_sub_granu_0_point_01(self,mock_dfp_client):
+    actual=obj.process_price_bucket(1,1.1,0.05)
+    self.assertEqual(actual,['1.00', '1.01', '1.02', '1.03', '1.04', '1.05', '1.06', '1.07', '1.08', '1.09'])
+  
+  def test_process_price_bucket_r_is_greater_than_0(self,mock_dfp_client):
+    actual=obj.process_price_bucket(1,1.05,0.25)
+    self.assertEqual(actual,['1.00', '1.01', '1.02', '1.03', '1.04'])
+  
+  def test_process_price_bucket_k_is_equal_to_0(self,mock_dfp_client):
+    actual=obj.process_price_bucket(0,1.05,0.25)
+    self.assertEqual(actual,['0.01', '0.02', '0.03', '0.04', '0.05', '0.06', '0.07', '0.08', '0.09', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.00', '1.01', '1.02', '1.03', '1.04'])
 
   @patch('dfp.get_custom_targeting')
   def test_create_line_item_configs(self, mock_get_targeting, mock_dfp_client):

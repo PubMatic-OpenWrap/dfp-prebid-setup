@@ -7,6 +7,7 @@ from tasks.price_utils import (
   get_prices_array,
   get_prices_summary_string,
   micro_amount_to_num,
+  round_ceil,
 )
 
 
@@ -171,3 +172,7 @@ class UtilsTests(TestCase):
         precision=4),
       '8.2200, 8.0600, 8.4271, 8.0000'
     )
+
+  def test_round_ceil(self):
+    self.assertEqual(round_ceil(12.556,2),12.56)
+    self.assertEqual(round_ceil(12.554,2),12.56)
