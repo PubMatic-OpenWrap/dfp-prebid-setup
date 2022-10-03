@@ -133,18 +133,21 @@ def setup_partner(user_email, advertiser_name, order_name, placements, ad_units,
   user_id = dfp.get_users.get_user_id_by_email(user_email)
 
    # Get the placement IDs and ad_unit IDs.
-  placement_ids = None 
-  ad_unit_ids = None
-  if len(placements) > 0:
-      placement_ids = dfp.get_placements.get_placement_ids_by_name(placements)
-  if len(ad_units) > 0:
-    ad_unit_ids=dfp.get_ad_units.get_ad_unit_by_name(ad_units)
-  else:
-      # Run of network
-      root_id = dfp.get_root_ad_unit_id.get_root_ad_unit_id()
-      ad_unit_ids = [ root_id ]
+  # Get the placement IDs.
+  placement_ids=None
+  ad_unit_ids=None
+  if len(placements)>0:
+    placement_ids = dfp.get_placements.get_placement_ids_by_name(placements)
 
+  # Get the ad unit IDs.
+  if len(ad_units)>0:
+    ad_unit_ids = dfp.get_ad_units.get_ad_unit_ids_by_name(ad_units)
   # Get (or potentially create) the advertiser.
+  else:
+    root_id = dfp.get_root_ad_unit_id.get_root_ad_unit_id()
+    ad_unit_ids = [ root_id ]
+
+  
   advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
     advertiser_name)
 
