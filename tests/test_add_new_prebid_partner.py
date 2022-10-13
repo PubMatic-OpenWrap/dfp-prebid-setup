@@ -72,21 +72,12 @@ class AddNewPrebidPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_prebid_partner.main()
 
-  def test_missing_placement_and_ad_units_setting(self, mock_dfp_client):
-    """
-    It throws an exception with a missing setting.
-    """
-    settings.DFP_TARGETED_PLACEMENT_NAMES = None
-    settings.DFP_TARGETED_AD_UNIT_NAMES = None
-    with self.assertRaises(MissingSettingException):
-      tasks.add_new_prebid_partner.main()
-
   def test_missing_bidder_code_setting(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
     """
-    settings.PREBID_BIDDER_CODE = None
-    with self.assertRaises(MissingSettingException):
+    settings.PREBID_BIDDER_CODE = not None and not isinstance(settings.PREBID_BIDDER_CODE,str)
+    with self.assertRaises(BadSettingException):
       tasks.add_new_prebid_partner.main()
 
   @patch('settings.DFP_CURRENCY_CODE', 'EUR', create=True)
