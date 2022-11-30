@@ -56,6 +56,8 @@ For Adpod setup use/edit one of the following csv files present in `dfp-prebid-s
    If the creative duration exceeds `60 seconds`, ad serving might fail.
 4. Tool creates separate order for each adpod slot.
 5. In the line item csv files the `rate_id` value should always be `2 (minimum)` for Adpod setup. 
+6. Creative vast_xml is cached at 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:{slotName}_pwtcid%%'.   
+Ex: https://ow.pubmatic.com/cache?uuid=123456789.
 
 
 
