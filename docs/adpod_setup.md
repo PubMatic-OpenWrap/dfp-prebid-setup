@@ -35,7 +35,25 @@ For Adpod setup use/edit one of the following csv files present in `dfp-prebid-s
 | High  |  Inline_Header_Bidding_High|
 | Dense  |Inline_Header_Bidding_Dense|
 
+##### Using Custom Price Granularity
+1. Create a csv file using the file template shown [here](https://github.com/PubMatic-OpenWrap/dfp-prebid-setup/blob/master/LineItem.csv)
+2. Add start_range, end_range, granularity and rate_id  in csv file for each price granularity range.
+3. Set rate_id = 2 for all the price ranges.   
+4. In settings.py file set `OPENWRAP_BUCKET_CSV` parameter to csv filename.
 
+
+##### Example (CSV):
+1. The smallest granularity level accepted is $0.01 (0 is not a valid option)
+2. Enter a granularity level of -1 for the final line item. This covers all targeting within the range to the endpoint. 
+(the last line with granularity “-1” covers all bids between $20-$30): 
+
+| order_name | advertiser | start_range | end_range | granularity | rate_id |
+|--|--|--|--|--| --|
+|"Pubmatic HB" | "Pubmatic" | 0 | 10 | 1 | 2 |
+|"Pubmatic HB" | "Pubmatic" | 10 | 20 | 2 | 2 
+|"Pubmatic HB" | "Pubmatic" | 20 | 30 | -1 | 2 
+
+*****Rates (pwtpb) created with above granularity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16 ,18, 20]***** 
 
 #### More Optional Settings for Adpod Setup
 
@@ -58,6 +76,3 @@ For Adpod setup use/edit one of the following csv files present in `dfp-prebid-s
 5. In the line item csv files the `rate_id` value should always be `2 (minimum)` for Adpod setup. 
 6. Creative vast_xml is cached at 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:{slotName}_pwtcid%%'.   
 Ex: https://ow.pubmatic.com/cache?uuid=123456789.
-
-
-
