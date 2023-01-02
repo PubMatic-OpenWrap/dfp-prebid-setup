@@ -491,7 +491,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check roadblock type
     self.assertEqual(args[19], 'AS_MANY_AS_POSSIBLE')
     #check bidder code
-    self.assertEqual(args[8], None)
+    self.assertEqual(args[8], ['mypartner'])
     #check device targetting
     self.assertEqual(args[17], None)
     #check custom targetting
@@ -514,7 +514,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check roadblock type
     self.assertEqual(args[19], 'ONE_OR_MORE')
     #check bidder code
-    self.assertEqual(args[8], None)
+    self.assertEqual(args[8], ['mypartner'])
     #check device targetting
     self.assertEqual(args[17], None)
     #check custom targetting
