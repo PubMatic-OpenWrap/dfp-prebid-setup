@@ -475,6 +475,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     self.assertEqual(num_creatives, 1)
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP, create=True)
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING', [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))] ,create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -495,9 +496,10 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check device targetting
     self.assertEqual(args[17], None)
     #check custom targetting
-    self.assertEqual(args[15], None)
+    self.assertEqual(args[15], [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))])
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP_VIDEO, create=True)
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING', [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))] ,create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -518,7 +520,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check device targetting
     self.assertEqual(args[17], None)
     #check custom targetting
-    self.assertEqual(args[15], None)
+    self.assertEqual(args[15], [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))])
     
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.JW_PLAYER, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')

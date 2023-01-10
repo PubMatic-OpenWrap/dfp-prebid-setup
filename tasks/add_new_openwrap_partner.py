@@ -680,7 +680,7 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
   # Set DFP targeting for custom targetting passed in settings.py
   key_gen_obj.set_custom_targeting(custom_targeting)
 
-  #do not set platform targeting for inapp,jwplayer
+  #do not set platform targeting for jwplayer, adpod
   if setup_type not in (constant.JW_PLAYER, constant.ADPOD):
       key_gen_obj.set_platform_targetting()
 
