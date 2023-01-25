@@ -325,7 +325,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         # dont set other targetting for JW Player
         if self.setup_type is not constant.JW_PLAYER:
 
-            if self.setup_type is not constant.ADPOD:
+            if self.setup_type not in (constant.ADPOD, constant.IN_APP, constant.IN_APP_VIDEO):
                 #pwtbst
                 top_set['children'].append(pwt_bst_criteria)
 
@@ -858,7 +858,7 @@ def load_price_csv(filename, setup_type):
         precision = 2
 
     # Currency module/CURRENCY_EXCHANGE is applicable for web and native platform
-    if setup_type in (constant.WEB, constant.WEB_SAFEFRAME, constant.NATIVE):
+    if setup_type in (constant.WEB, constant.WEB_SAFEFRAME, constant.NATIVE, constant.IN_APP, constant.IN_APP_VIDEO):
         currency_exchange = getattr(settings, 'CURRENCY_EXCHANGE', True)
 
     if currency_exchange:
