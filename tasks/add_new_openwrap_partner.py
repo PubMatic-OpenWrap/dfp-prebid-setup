@@ -993,8 +993,7 @@ def main():
 
   if setup_type == constant.ADPOD:
     adpod_creative_cache_url = getattr(settings, 'ADPOD_CREATIVE_CACHE_URL', constant.DEFAULT_APDOD_CACHE_URL)  
-    constant.ADPOD_VIDEO_VAST_URL =  adpod_creative_cache_url + constant.ADPOD_VIDEO_VAST_URL
-
+    constant.ADPOD_VIDEO_VAST_URL =  constant.ADPOD_VIDEO_VAST_URL.replace("{url}",adpod_creative_cache_url)
   adpod_slots = getattr(settings, 'ADPOD_SLOTS', None)
   adpod_size = len(adpod_slots)
 
