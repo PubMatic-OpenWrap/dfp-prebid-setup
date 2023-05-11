@@ -473,7 +473,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         return subCustomValueArray
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
-     sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
+     sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, creative_user_def_var, num_creatives, use_1x1,
      currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
@@ -559,7 +559,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   # Create creatives.
   #Get creative template for native platform
   creative_template_ids = None
-  if setup_type == constant.NATIVE:
+  if setup_type == constant.NATIVE or (setup_type == constant.IN_APP and creative_template is not None):
       creative_template_ids = dfp.get_creative_template.get_creative_template_ids_by_name(creative_template)
 
   #if bidder is None, then bidder will be 'All'
@@ -582,7 +582,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   if use_1x1:
       size_arg = None
 
-  creative_configs = get_creative_config(setup_type, bidder_str, order_name, advertiser_id, size_arg, num_creatives, creative_template_ids,  prefix=unique_id, adpod_creative_durations=adpod_creative_durations, slot=slot)
+  creative_configs = get_creative_config(setup_type, bidder_str, order_name, advertiser_id, size_arg, num_creatives, creative_template_ids,  prefix=unique_id, adpod_creative_durations=adpod_creative_durations, slot=slot, creative_user_def_var=creative_user_def_var)
   creative_ids = dfp.create_creatives.create_creatives(creative_configs)
   
   # if platform is video, create creative sets
@@ -750,11 +750,11 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
 
 #This method returns creative config based on the creative type
 def get_creative_config(setup_type, bidder_str, order_name, advertiser_id, sizes, num_creatives,
-    creative_template_ids, prefix, adpod_creative_durations=None, slot= None):
+    creative_template_ids, prefix, adpod_creative_durations=None, slot= None, creative_user_def_var=None):
 
     creative_configs= []
-    if setup_type == constant.NATIVE:
-        creative_configs = dfp.create_creatives.create_creative_configs_for_native(advertiser_id, creative_template_ids, num_creatives, prefix)
+    if setup_type == constant.NATIVE or (setup_type == constant.IN_APP and creative_template_ids is not None):
+        creative_configs = dfp.create_creatives.create_creative_configs_for_native(advertiser_id, creative_template_ids, num_creatives, prefix, creative_user_def_var)
     elif setup_type == constant.VIDEO:
         creative_configs = dfp.create_creatives.create_creative_configs_for_video(advertiser_id, sizes, prefix, constant.VIDEO_VAST_URL, constant.VIDEO_DURATION)
     elif setup_type == constant.IN_APP_VIDEO:
@@ -1030,7 +1030,9 @@ def main():
 
   # read creative template for native Line-items
   creative_template = None
-  if setup_type == constant.NATIVE:
+  creative_user_def_var = None
+  creative_type = getattr(settings, 'OPENWRAP_CREATIVE_TYPE', None)  
+  if setup_type == constant.NATIVE or (setup_type == constant.IN_APP and creative_type == constant.NATIVE):
       creative_template = getattr(settings, 'OPENWRAP_CREATIVE_TEMPLATE', None)
       if creative_template is None:
         raise MissingSettingException('OPENWRAP_CREATIVE_TEMPLATE')
@@ -1038,6 +1040,7 @@ def main():
         raise BadSettingException('OPENWRAP_CREATIVE_TEMPLATE')
       if isinstance (creative_template, str):
           creative_template = [creative_template]
+      creative_user_def_var = getattr(settings, 'OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR', None)    
 
   bidder_code = getattr(settings, 'PREBID_BIDDER_CODE', None)
   if bidder_code is not None and not isinstance(bidder_code, (list, tuple, str)):
@@ -1212,6 +1215,7 @@ def main():
                     prices,
                     setup_type,
                     creative_template,
+                    None,
                     num_creatives,
                     use_1x1,
                     currency_code,
@@ -1241,6 +1245,7 @@ def main():
                     prices,
                     setup_type,
                     creative_template,
+                    creative_user_def_var,
                     num_creatives,
                     use_1x1,
                     currency_code,
