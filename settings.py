@@ -182,6 +182,10 @@ VIDEO_LENGTHS = [10,15]
 # Slot numbers should be in incremental order.
 ADPOD_SLOTS = [1,2,3]
 
+# Optional parameter to set creative cache url for adpod setup 
+# Defaults to ow.pubmatic.com
+#ADPOD_CREATIVE_CACHE_URL = "test.com"
+
 #########################################################################
 
 # Try importing local settings, which will take precedence.
