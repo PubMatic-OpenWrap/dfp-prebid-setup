@@ -161,7 +161,7 @@ OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 # Openwrap currency conversion
 # This option if set, will convert rate to network's currency,
 # Like the existing tool, default value is True for all platforms
-# and you can set it to false for WEB, WEB_SAFEFRAME and NATIVE only
+# and you can set it to false for WEB, WEB_SAFEFRAME, NATIVE, IN_APP and IN_APP_VIDEO only
 CURRENCY_EXCHANGE = False
 
 # Optional
