@@ -83,7 +83,7 @@ creativetype_platform_map = {
     constant.WEB_SAFEFRAME: "display",
     constant.AMP: "amp",
     constant.IN_APP: "inapp",
-    constant.IN_APP_VIDEO: "inapp_video",
+    constant.IN_APP_VIDEO: "inapp",
     constant.NATIVE: "native",
     constant.VIDEO : "video",
     constant.ADPOD : "video",
@@ -325,7 +325,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         # dont set other targetting for JW Player
         if self.setup_type is not constant.JW_PLAYER:
 
-            if self.setup_type is not constant.ADPOD:
+            if self.setup_type not in (constant.ADPOD, constant.IN_APP, constant.IN_APP_VIDEO):
                 #pwtbst
                 top_set['children'].append(pwt_bst_criteria)
 
@@ -680,8 +680,8 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
   # Set DFP targeting for custom targetting passed in settings.py
   key_gen_obj.set_custom_targeting(custom_targeting)
 
-  #do not set platform targeting for inapp,jwplayer
-  if setup_type not in (constant.IN_APP, constant.IN_APP_VIDEO, constant.JW_PLAYER, constant.ADPOD):
+  #do not set platform targeting for jwplayer, adpod
+  if setup_type not in (constant.JW_PLAYER, constant.ADPOD):
       key_gen_obj.set_platform_targetting()
 
   if setup_type is constant.JW_PLAYER:
@@ -858,7 +858,7 @@ def load_price_csv(filename, setup_type):
         precision = 2
 
     # Currency module/CURRENCY_EXCHANGE is applicable for web and native platform
-    if setup_type in (constant.WEB, constant.WEB_SAFEFRAME, constant.NATIVE):
+    if setup_type in (constant.WEB, constant.WEB_SAFEFRAME, constant.NATIVE, constant.IN_APP, constant.IN_APP_VIDEO):
         currency_exchange = getattr(settings, 'CURRENCY_EXCHANGE', True)
 
     if currency_exchange:
@@ -1055,9 +1055,6 @@ def main():
        raise BadSettingException('DFP_DEVICE_CATEGORIES')
 
   device_capabilities = None
-  if setup_type is constant.IN_APP or setup_type is constant.IN_APP_VIDEO:
-      device_capabilities = ('Mobile Apps', 'MRAID v1', 'MRAID v2')
-
   roadblock_type = getattr(settings, 'DFP_ROADBLOCK_TYPE', 'ONE_OR_MORE')
   if roadblock_type not in ('ONE_OR_MORE', 'AS_MANY_AS_POSSIBLE'):
       raise BadSettingException('DFP_ROADBLOCK_TYPE')
@@ -1107,13 +1104,9 @@ def main():
 
   if setup_type == constant.IN_APP:
       roadblock_type = 'AS_MANY_AS_POSSIBLE'
-      bidder_code = None
-      custom_targeting = None
       device_categories = None
   elif setup_type == constant.IN_APP_VIDEO:
       roadblock_type = 'ONE_OR_MORE'
-      bidder_code = None
-      custom_targeting = None
       device_categories = None
   elif setup_type == constant.JW_PLAYER:
       roadblock_type = 'ONE_OR_MORE'

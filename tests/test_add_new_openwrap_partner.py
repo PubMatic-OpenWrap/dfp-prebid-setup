@@ -475,6 +475,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     self.assertEqual(num_creatives, 1)
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP, create=True)
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING', [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))] ,create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -491,13 +492,14 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check roadblock type
     self.assertEqual(args[20], 'AS_MANY_AS_POSSIBLE')
     #check bidder code
-    self.assertEqual(args[8], None)
+    self.assertEqual(args[8], ['mypartner'])
     #check device targetting
     self.assertEqual(args[18], None)
     #check custom targetting
-    self.assertEqual(args[16], None)
+    self.assertEqual(args[15], [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))])
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP_VIDEO, create=True)
+  @patch('settings.OPENWRAP_CUSTOM_TARGETING', [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))] ,create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -514,11 +516,11 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check roadblock type
     self.assertEqual(args[20], 'ONE_OR_MORE')
     #check bidder code
-    self.assertEqual(args[8], None)
+    self.assertEqual(args[8], ['mypartner'])
     #check device targetting
     self.assertEqual(args[18], None)
     #check custom targetting
-    self.assertEqual(args[16], None)
+    self.assertEqual(args[15], None)
     
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.JW_PLAYER, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
@@ -800,14 +802,6 @@ class AddNewOpenwrapPartnerTests(TestCase):
     mock_get_users.get_user_id_by_email = MagicMock(return_value=14523)
     mock_get_placements.get_placement_ids_by_name = MagicMock(
       return_value=[1234567, 9876543])
-    mock_get_device_capabilities.get_device_capabilities = MagicMock(
-      return_value= {
-        'Mobile Apps': 5005,
-        'MRAID v1': 5001,
-        'MRAID v2': 5006,
-        'Phone calls': 5000
-      }
-    )
     mock_get_advertisers.get_advertiser_id_by_name = MagicMock(
       return_value=246810)
     mock_create_orders.create_order = MagicMock(return_value=1357913)
@@ -828,10 +822,9 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
                                                setup_type = constant.IN_APP, creative_template = None, creative_user_def_var = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
-                                               same_adv_exception= False, device_categories=None, device_capabilities=['Mobile Apps'], 
+                                               same_adv_exception= False, device_categories=None, device_capabilities=[], 
                                                roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
-    mock_get_device_capabilities.get_device_capabilities.assert_called_once()   
     (mock_create_creatives.create_duplicate_creative_configs
       .assert_called_once_with(bidder_code[0], order, 246810,  sizes, 2, creative_file='creative_snippet_openwrap_in_app.html', prefix='INAPP_xyz', safe_frame=False))
     mock_licas.make_licas.assert_called_once_with([543210,987650], [54321,98765], durations=None, setup_type='IN_APP', size_overrides=[], slot=None)
@@ -863,14 +856,6 @@ class AddNewOpenwrapPartnerTests(TestCase):
     mock_get_users.get_user_id_by_email = MagicMock(return_value=14523)
     mock_get_placements.get_placement_ids_by_name = MagicMock(
       return_value=[1234567, 9876543])
-    mock_get_device_capabilities.get_device_capabilities = MagicMock(
-      return_value= {
-        'Mobile Apps': 5005,
-        'MRAID v1': 5001,
-        'MRAID v2': 5006,
-        'Phone calls': 5000
-      }
-    )
     mock_get_advertisers.get_advertiser_id_by_name = MagicMock(
       return_value=246810)
     mock_create_orders.create_order = MagicMock(return_value=1357913)
@@ -892,10 +877,9 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
                                                setup_type = constant.IN_APP_VIDEO, creative_template = None, creative_user_def_var = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
-                                               same_adv_exception= False, device_categories=None, device_capabilities=['Mobile Apps'], 
+                                               same_adv_exception= False, device_categories=None, device_capabilities=[], 
                                                roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None)
 
-    mock_get_device_capabilities.get_device_capabilities.assert_called_once()
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
       placements)
