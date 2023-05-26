@@ -496,7 +496,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check device targetting
     self.assertEqual(args[18], None)
     #check custom targetting
-    self.assertEqual(args[15], [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))])
+    self.assertEqual(args[16], [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))])
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.IN_APP_VIDEO, create=True)
   @patch('settings.OPENWRAP_CUSTOM_TARGETING', [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))] ,create=True)
@@ -520,7 +520,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     #check device targetting
     self.assertEqual(args[18], None)
     #check custom targetting
-    self.assertEqual(args[15], None)
+    self.assertEqual(args[16], [("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))])
     
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.JW_PLAYER, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
