@@ -123,6 +123,7 @@ If successful, it returns all the orders in your GAM account.
 |`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. Not applicable for 'IN_APP', 'IN_APP_VIDEO' and 'JWPLAYER'|array of arrays (For example, `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.)|None|
 |`CURRENCY_EXCHANGE`|Same as **Currency Module** in the previous Line Item Tool. When used, this option converts the _rate_ calculated from CSV to the network's currency setting. This is applicable for `WEB`, `WEB_SAFEFRAME` and `NATIVE` only. |bool|True|
 |`OPENWRAP_USE_1x1_CREATIVE`| When this option is set, the tool creates a single creative with size 1x1 and all lineitems with size overrides. |bool|False|
+|`OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR`| When this option is set, the tool creates a string variable for NATIVE creative type. |string|None|
 
 ## Create Line Items for Prebid
 

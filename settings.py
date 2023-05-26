@@ -157,8 +157,8 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 # you can specify an array for multiple creative templates
 OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 
-# option to set user-defined variable for NATIVE creative type (used only for NATIVE setup type)
-#OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR = 'pubmatic-ow-signal%%PATTERN:pwtsid%%'
+# option to set user-defined variable for NATIVE creative type (used only for NATIVE creative type)
+#OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR = 'pubmatic-ow-signal:%%PATTERN:pwtsid%%'
 
 # Optional
 # Openwrap currency conversion
