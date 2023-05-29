@@ -115,7 +115,9 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.PltValueGetter = None
         self.creativeTargeting = None
         self.pwtbst_value_id = None
-
+        self.pwt_dealid = None
+        self.dealIDTargeting = None
+        self.dealTierTargeting = None
     def init_keys(self):  
         # Get DFP key IDs for line item targeting.
         self.pwtpid_key_id = get_or_create_dfp_targeting_key('pwtpid', key_type='PREDEFINED')  # bidder
@@ -151,7 +153,70 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
                 'logicalOperator': 'OR',
                 'children': [custom_criteria]
             }
-            
+
+    def set_deal_targeting(self, slot, deal_setup_type, dealConfig):
+    
+        if deal_setup_type == None:
+            key = '{}_pwtdid'.format(slot)   
+            key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
+            value_getter = DFPValueIdGetter(key)      
+            value_id = value_getter.get_value_id("na")
+            self.dealIDTargeting = {
+                'xsi_type': 'CustomCriteria',
+                'keyId': key_id,
+                'valueIds': [value_id],
+                'operator': 'IS'
+            }
+
+            key = '{}_pwtdealtier'.format(slot)   
+            key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
+            value_getter = DFPValueIdGetter(key)      
+            value_id = value_getter.get_value_id("na")
+            self.dealTierTargeting = {
+                'xsi_type': 'CustomCriteria',
+                'keyId': key_id,
+                'valueIds': [value_id],
+                'operator': 'IS'
+            }
+        if deal_setup_type == "DEALID":
+            key = '{}_pwtdid'.format(slot)   
+            key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
+            value_getter = DFPValueIdGetter(key)      
+            dealIdList=[]
+            for id in dealConfig:  
+                value_id = value_getter.get_value_id(id)
+                dealIdList.append({
+                    'xsi_type': 'CustomCriteria',
+                    'keyId': key_id,
+                    'valueIds': [value_id],
+                    'operator': 'IS'
+                })
+            self.dealIDTargeting = {
+                'xsi_type': 'CustomCriteriaSet',
+                'logicalOperator': 'OR',
+                'children': dealIdList
+            }
+        if deal_setup_type == "DEALTIER":
+            key = '{}_pwtdealtier'.format(slot)   
+            key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
+            value_getter = DFPValueIdGetter(key)      
+            dealTierList=[]
+            for cfg in dealConfig:
+                for prf in cfg["prefix"]:
+                    for tier in cfg["priorites"]:
+                        value_id = value_getter.get_value_id(prf+str(tier))
+                        dealTierList.append({
+                            'xsi_type': 'CustomCriteria',
+                            'keyId': key_id,
+                            'valueIds': [value_id],
+                            'operator': 'IS'
+                        })    
+                
+            self.dealTierTargeting = {
+                'xsi_type': 'CustomCriteriaSet',
+                'logicalOperator': 'OR',
+                'children': dealTierList
+            }                
     def get_creative_targeting(self, duration):    
         return self.creativeTargeting[duration]
     
@@ -340,6 +405,11 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
             if self.bid_price: 
                 top_set['children'].append(self.bid_price)
 
+        if self.setup_type is constant.ADPOD:
+            if self.dealIDTargeting is not None:
+                top_set['children'].append(self.dealIDTargeting)
+            if self.dealTierTargeting is not None:
+                top_set['children'].append(self.dealTierTargeting) 
         return top_set
 
     def process_price_bucket(self, start_index, end_index, granu):
@@ -474,7 +544,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
      sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
-     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations):
+     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, deal_setup_type, dealConfig):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
@@ -607,14 +677,14 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   line_items_config = create_line_item_configs(prices, order_id,
       placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
       currency_code, custom_targeting, setup_type, creative_template_ids, same_adv_exception=same_adv_exception,ad_unit_ids=ad_unit_ids,
-      device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
-  
+      device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot, deal_setup_type=deal_setup_type , dealConfig=dealConfig)
+     
   line_item_ids = dfp.create_line_items.create_line_items(line_items_config)
 
   # Associate creatives with line items.
   size_overrides = []
   if use_1x1 and setup_type is not constant.NATIVE:
-      size_overrides = sizes
+      size_overrides = sizes    
 
   if setup_type == 'ADPOD':
       logger.info("\nCreating lineitem creative associations for slot {}...".format(slot))
@@ -641,7 +711,7 @@ def get_creative_file(setup_type):
 def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes, key_gen_obj,
   lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, creative_template_ids,
   ad_unit_ids=None, same_adv_exception=False, device_category_ids=None,device_capability_ids=None,
-  roadblock_type='ONE_OR_MORE', durations = None, slot = None):
+  roadblock_type='ONE_OR_MORE', durations = None, slot = None, deal_setup_type = None, dealConfig = None):
   """
   Create a line item config for each price bucket.
 
@@ -688,7 +758,8 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
       key_gen_obj.set_jwplayer_key()
 
   if setup_type is constant.ADPOD:  
-     key_gen_obj.set_creative_targeting(durations,slot)  
+     key_gen_obj.set_creative_targeting(durations,slot)
+     key_gen_obj.set_deal_targeting(slot, deal_setup_type, dealConfig) 
 
   line_items_config = []
 
@@ -991,6 +1062,32 @@ def main():
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER, constant.ADPOD]:
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
 
+  dealConfig = None  
+  deal_setup_type = getattr(settings, 'OPENWRAP_DEAL_SETUP_TYPE', None)  
+  if deal_setup_type is not None and setup_type == constant.ADPOD:
+    if deal_setup_type == "DEALID":
+        dealIDs = getattr(settings, 'OPENWRAP_DEALIDS', None)
+        if dealIDs == None or len(dealIDs) == 0:
+            raise BadSettingException('OPENWRAP_DEALID should not be empty if  OPENWRAP_DEAL_SETUP_TYPE is DEALID')    
+        dealConfig=dealIDs
+    elif deal_setup_type == "DEALTIER":
+        dealTierCfg = getattr(settings, 'OPENWRAP_DEALTIERCONFIG', None)
+        for cfg in dealTierCfg:
+            if isinstance(cfg["prefix"], (list)) == False:
+                raise BadSettingException('OPENWRAP_DEALTIERCONFIG prefix should be a list')    
+                
+            if len(cfg["prefix"]) == 0:
+                raise BadSettingException('OPENWRAP_DEALTIERCONFIG prefix length should be greater than 0')    
+            
+            if isinstance(cfg["priorites"], (list)) == False:
+                raise BadSettingException('OPENWRAP_DEALTIERCONFIG priorities should be a list')    
+                
+            if len(cfg["priorites"]) == 0:
+                raise BadSettingException('OPENWRAP_DEALTIERCONFIG priorities length should be greater than 0')    
+        dealConfig = dealTierCfg
+    else: 
+        raise BadSettingException('OPENWRAP_DEAL_SETUP_TYPE should be either DEALID or DEALTIER')
+   
   if setup_type == constant.ADPOD:
     adpod_creative_cache_url = getattr(settings, 'ADPOD_CREATIVE_CACHE_URL', constant.DEFAULT_APDOD_CACHE_URL)  
     constant.ADPOD_VIDEO_VAST_URL =  constant.ADPOD_VIDEO_VAST_URL.replace("{url}",adpod_creative_cache_url)
@@ -1221,7 +1318,9 @@ def main():
                     device_capabilities,
                     roadblock_type,
                     slot,
-                    adpod_creative_durations
+                    adpod_creative_durations,
+                    deal_setup_type,
+                    dealConfig
             )
         
         logger.info(""" 
@@ -1249,6 +1348,8 @@ def main():
                     device_categories,
                     device_capabilities,
                     roadblock_type,
+                    None,
+                    None,
                     None,
                     None
             )  

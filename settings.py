@@ -12,11 +12,11 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 # For ADPOD setup, separate order wil be created for lineitems of each slot. 
 # Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
 # Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will s1_1_test_order_name,  s2_1_test_order_name for 1st and 2nd slot of adpod
-DFP_ORDER_NAME = 'test_order_name'
+DFP_ORDER_NAME = 'test_order_deal'
 
 # The email of the DFP user who will be the trafficker for
 # the created order
-DFP_USER_EMAIL_ADDRESS = 'testuser@email.com'
+DFP_USER_EMAIL_ADDRESS = 'test.dfp.sandbox@gmail.com'
 
 # The exact name of the DFP advertiser for the created order
 # Set 'PubMatic' for openwrap Line items
@@ -30,7 +30,7 @@ DFP_ADVERTISER_TYPE = "ADVERTISER"
 
 # Lineitem type. Can be either "NETWORK", "HOUSE", "PRICE_PRIORITY" or "SPONSORSHIP"
 # This option is only for openwrap
-DFP_LINEITEM_TYPE= "PRICE_PRIORITY"
+DFP_LINEITEM_TYPE= "SPONSORSHIP"
 
 # Names of placements the line items should target.
 # For Openwrap Leave empty for Run of Network (requires Network permission)
@@ -46,10 +46,6 @@ DFP_PLACEMENT_SIZES = [
   {
     'width': '300',
     'height': '250'
-  },
-  {
-    'width': '728',
-    'height': '90'
   },
 ]
 
@@ -142,7 +138,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 # OpenWrap Creative Type
 #  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
 #  Defaults to WEB
-#OPENWRAP_SETUP_TYPE = "WEB"
+OPENWRAP_SETUP_TYPE = "ADPOD"
 
 # OpenWrap Use 1x1 Creative
 #  If true, will create creatives with 1x1 and size overrides
@@ -171,7 +167,7 @@ CURRENCY_EXCHANGE = False
 # Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
 # This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
 # Represents the video length parameter on UI.
-VIDEO_LENGTHS = [10,15]
+VIDEO_LENGTHS = [10]
 
 #Optional
 #OpenWrap ADPOD_SLOTS
@@ -180,7 +176,17 @@ VIDEO_LENGTHS = [10,15]
 # ex ADPOD_SLOTS = [1,2,3], will create 1st, 2nd and 3rd slot of adpod
 # ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
 # Slot numbers should be in incremental order.
-ADPOD_SLOTS = [1,2,3]
+ADPOD_SLOTS = [1]
+
+# "DEALTIER"/ "DEALID"
+OPENWRAP_DEAL_SETUP_TYPE = "DEALTIER"
+OPENWRAP_DEALIDS = ["123"]
+OPENWRAP_DEALTIERCONFIG=[
+  {
+    "prefix": ["pubm"],
+    "priorites": [6,7,8]
+  }
+]
 
 # Optional parameter to set creative cache url for adpod setup 
 # Defaults to ow.pubmatic.com
