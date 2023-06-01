@@ -140,7 +140,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 #]
 
 # OpenWrap Creative Type
-#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
+#  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "IN_APP_NATIVE", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
 #  Defaults to WEB
 #OPENWRAP_SETUP_TYPE = "WEB"
 
@@ -157,7 +157,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 # you can specify an array for multiple creative templates
 OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 
-# option to set user-defined variable for NATIVE creative type (used only for NATIVE creative type)
+# option to set user-defined variable for NATIVE creative (used only for setup_type = NATIVE or IN_APP_NATIVE)
 #OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR = 'pubmatic-ow-signal:%%PATTERN:pwtsid%%'
 
 # Optional

@@ -61,7 +61,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   creative_placeholders = []
 
  # creative placeholder for native
-  if setup_type == 'NATIVE' or (setup_type == 'IN_APP' and creative_template_ids is not None):
+  if setup_type == 'NATIVE' or setup_type == 'IN_APP_NATIVE':
     for id in creative_template_ids:
       creative_placeholders.append(
         {

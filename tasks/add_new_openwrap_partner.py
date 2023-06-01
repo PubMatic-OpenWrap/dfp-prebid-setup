@@ -84,6 +84,7 @@ creativetype_platform_map = {
     constant.AMP: "amp",
     constant.IN_APP: "inapp",
     constant.IN_APP_VIDEO: "inapp",
+    constant.IN_APP_NATIVE: "inapp",
     constant.NATIVE: "native",
     constant.VIDEO : "video",
     constant.ADPOD : "video",
@@ -325,7 +326,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         # dont set other targetting for JW Player
         if self.setup_type is not constant.JW_PLAYER:
 
-            if self.setup_type not in (constant.ADPOD, constant.IN_APP, constant.IN_APP_VIDEO):
+            if self.setup_type not in (constant.ADPOD, constant.IN_APP, constant.IN_APP_VIDEO, constant.IN_APP_NATIVE):
                 #pwtbst
                 top_set['children'].append(pwt_bst_criteria)
 
@@ -473,8 +474,8 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         return subCustomValueArray
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
-     sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, creative_user_def_var, num_creatives, use_1x1,
-     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations):
+     sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
+     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
@@ -500,7 +501,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   # Get the device category IDs
   # Dont get device categories for in-app and jwplayer platform
   device_category_ids = None
-  if device_categories != None and setup_type not in (constant.IN_APP, constant.IN_APP_VIDEO, constant.JW_PLAYER):
+  if device_categories != None and setup_type not in (constant.IN_APP, constant.IN_APP_VIDEO, constant.IN_APP_NATIVE, constant.JW_PLAYER):
       device_category_ids = []
       if isinstance(device_categories, str):
           device_categories = (device_categories)
@@ -516,7 +517,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
 
   #get device capabilty ids for in-APP platform
   device_capability_ids = None
-  if device_capabilities != None and setup_type in (constant.IN_APP, constant.IN_APP_VIDEO):
+  if device_capabilities != None and setup_type in (constant.IN_APP, constant.IN_APP_VIDEO, constant.IN_APP_NATIVE):
     device_capability_ids = []
     if isinstance(device_capabilities, str):
         device_capabilities = (device_capabilities)
@@ -559,7 +560,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   # Create creatives.
   #Get creative template for native platform
   creative_template_ids = None
-  if setup_type == constant.NATIVE or (setup_type == constant.IN_APP and creative_template is not None):
+  if setup_type == constant.NATIVE or setup_type == constant.IN_APP_NATIVE:
       creative_template_ids = dfp.get_creative_template.get_creative_template_ids_by_name(creative_template)
 
   #if bidder is None, then bidder will be 'All'
@@ -613,7 +614,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
 
   # Associate creatives with line items.
   size_overrides = []
-  if use_1x1 and setup_type is not constant.NATIVE:
+  if use_1x1 and setup_type is not (constant.NATIVE or constant.IN_APP_NATIVE):
       size_overrides = sizes
 
   if setup_type == 'ADPOD':
@@ -753,7 +754,7 @@ def get_creative_config(setup_type, bidder_str, order_name, advertiser_id, sizes
     creative_template_ids, prefix, adpod_creative_durations=None, slot= None, creative_user_def_var=None):
 
     creative_configs= []
-    if setup_type == constant.NATIVE or (setup_type == constant.IN_APP and creative_template_ids is not None):
+    if setup_type == constant.NATIVE or setup_type == constant.IN_APP_NATIVE:
         creative_configs = dfp.create_creatives.create_creative_configs_for_native(advertiser_id, creative_template_ids, num_creatives, prefix, creative_user_def_var)
     elif setup_type == constant.VIDEO:
         creative_configs = dfp.create_creatives.create_creative_configs_for_video(advertiser_id, sizes, prefix, constant.VIDEO_VAST_URL, constant.VIDEO_DURATION)
@@ -809,6 +810,8 @@ def get_unique_id(setup_type):
         uid = u'INAPP_{}'.format(uid)
     if setup_type is constant.IN_APP_VIDEO:
         uid = u'INAPP_VIDEO_{}'.format(uid)
+    if setup_type is constant.IN_APP_NATIVE:
+        uid = u'INAPP_NATIVE_{}'.format(uid)
     if setup_type is constant.NATIVE:
         uid = u'NATIVE_{}'.format(uid)
     if setup_type is constant.VIDEO:
@@ -987,7 +990,7 @@ def main():
   setup_type = getattr(settings, 'OPENWRAP_SETUP_TYPE', None)
   if setup_type is None:
     setup_type = constant.WEB
-  elif setup_type not in [constant.WEB, constant.WEB_SAFEFRAME, constant.AMP, constant.IN_APP, constant.IN_APP_VIDEO,
+  elif setup_type not in [constant.WEB, constant.WEB_SAFEFRAME, constant.AMP, constant.IN_APP, constant.IN_APP_VIDEO, constant.IN_APP_NATIVE,
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER, constant.ADPOD]:
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
 
@@ -1031,8 +1034,7 @@ def main():
   # read creative template for native Line-items
   creative_template = None
   creative_user_def_var = None
-  creative_type = getattr(settings, 'OPENWRAP_CREATIVE_TYPE', None)  
-  if setup_type == constant.NATIVE or (setup_type == constant.IN_APP and creative_type == constant.NATIVE):
+  if setup_type == constant.NATIVE or setup_type == constant.IN_APP_NATIVE:
       creative_template = getattr(settings, 'OPENWRAP_CREATIVE_TEMPLATE', None)
       if creative_template is None:
         raise MissingSettingException('OPENWRAP_CREATIVE_TEMPLATE')
@@ -1208,7 +1210,6 @@ def main():
                     prices,
                     setup_type,
                     creative_template,
-                    None,
                     num_creatives,
                     use_1x1,
                     currency_code,
@@ -1218,7 +1219,8 @@ def main():
                     device_capabilities,
                     roadblock_type,
                     slot,
-                    adpod_creative_durations
+                    adpod_creative_durations,
+                    None
             )
         
         logger.info(""" 
@@ -1238,7 +1240,6 @@ def main():
                     prices,
                     setup_type,
                     creative_template,
-                    creative_user_def_var,
                     num_creatives,
                     use_1x1,
                     currency_code,
@@ -1248,7 +1249,8 @@ def main():
                     device_capabilities,
                     roadblock_type,
                     None,
-                    None
+                    None,
+                    creative_user_def_var
             )  
     logger.info("""
 
