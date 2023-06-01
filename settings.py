@@ -161,7 +161,7 @@ OPENWRAP_CREATIVE_TEMPLATE = 'ganeshformat'
 # Openwrap currency conversion
 # This option if set, will convert rate to network's currency,
 # Like the existing tool, default value is True for all platforms
-# and you can set it to false for WEB, WEB_SAFEFRAME and NATIVE only
+# and you can set it to false for WEB, WEB_SAFEFRAME, NATIVE, IN_APP and IN_APP_VIDEO only
 CURRENCY_EXCHANGE = False
 
 # Optional
@@ -181,6 +181,10 @@ VIDEO_LENGTHS = [10,15]
 # ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
 # Slot numbers should be in incremental order.
 ADPOD_SLOTS = [1,2,3]
+
+# Optional parameter to set creative cache url for adpod setup 
+# Defaults to ow.pubmatic.com
+#ADPOD_CREATIVE_CACHE_URL = "test.com"
 
 #########################################################################
 

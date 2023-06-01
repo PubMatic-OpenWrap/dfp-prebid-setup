@@ -1,7 +1,7 @@
 colorama==0.4.4
 future==0.18.2
-googleads==30.0.0
+googleads==35.0.0
 mock==3.0.5
 pycryptodome==3.13.0
-PyYAML==5.4.1
+PyYAML==6.0.0
 shortuuid==0.5.0
