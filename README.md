@@ -93,7 +93,7 @@ If successful, it returns all the orders in your GAM account.
 |`PREBID_BIDDER_CODE`|The value of [`pwtpid`](https://github.com/PubMatic/OpenWrap#wrapper-keys-sent-to-dfp) for this partner. Set to `None` to generate line items for all partners. Use array of strings if the line should match multiple partners.|string or array of strings|
 |`OPENWRAP_SETUP_TYPE`|Which type of creative to use.  Options are `WEB`, `WEB_SAFEFRAME`, `AMP`, `IN_APP`, `IN_APP_VIDEO`, `IN_APP_NATIVE`, `NATIVE`, `VIDEO`, `JWPLAYER`,`ADPOD`.|string|
 |`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item for adpod setup  and  `pwtecp` targeting for each line item for other setups. For Adpod setup set this parameter to one of the `Inline_Header_Bidding_{Price Granularity}.csv file`.| string|
-|`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE`. | string |
+|`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE` or `IN_APP_NATIVE`. | string |
 |`VIDEO_LENTHS`| Sets the durations for adpod video creatives. This is only required when `OPENWRAP_SETUP_TYPE`=`ADPOD` |integer array|None|
 |`ADPOD_SLOTS`| Sets the slots position in a single Adpod. ex ADPOD_SLOTS = [1,2,3] for 1st, 2nd, 3rd slot of adpod. This is only required when `OPENWRAP_SETUP_TYPE`=`ADPOD`|integer Array|None|
 
