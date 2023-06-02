@@ -1042,7 +1042,11 @@ def main():
         raise BadSettingException('OPENWRAP_CREATIVE_TEMPLATE')
       if isinstance (creative_template, str):
           creative_template = [creative_template]
-      creative_user_def_var = getattr(settings, 'OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR', None)    
+
+      if setup_type == constant.IN_APP_NATIVE:
+        creative_user_def_var = 'pubmatic-ow-signal:%%PATTERN:pwtsid%%'
+      else:
+        creative_user_def_var = getattr(settings, 'OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR', None)
 
   bidder_code = getattr(settings, 'PREBID_BIDDER_CODE', None)
   if bidder_code is not None and not isinstance(bidder_code, (list, tuple, str)):
