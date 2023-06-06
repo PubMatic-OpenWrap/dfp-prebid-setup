@@ -91,9 +91,9 @@ If successful, it returns all the orders in your GAM account.
 |`DFP_TARGETED_PLACEMENT_NAMES`|The names of GAM placements targeted by the line items. Use empty array for, **Run of Network**.|array of strings|
 |`DFP_PLACEMENT_SIZES`|The creative sizes for the targeted placements.|array of objects (for example, `[{'width': '728', 'height': '90'}]`). Incase of `OPENWRAP_SETUP_TYPE`=`ADPOD` only one size object is allowed, it will be applicable for all creatives.|
 |`PREBID_BIDDER_CODE`|The value of [`pwtpid`](https://github.com/PubMatic/OpenWrap#wrapper-keys-sent-to-dfp) for this partner. Set to `None` to generate line items for all partners. Use array of strings if the line should match multiple partners.|string or array of strings|
-|`OPENWRAP_SETUP_TYPE`|Which type of creative to use.  Options are `WEB`, `WEB_SAFEFRAME`, `AMP`, `IN_APP`, `IN_APP_VIDEO`, `NATIVE`, `VIDEO`, `JWPLAYER`,`ADPOD`.|string|
+|`OPENWRAP_SETUP_TYPE`|Which type of creative to use.  Options are `WEB`, `WEB_SAFEFRAME`, `AMP`, `IN_APP`, `IN_APP_VIDEO`, `IN_APP_NATIVE`, `NATIVE`, `VIDEO`, `JWPLAYER`,`ADPOD`.|string|
 |`OPENWRAP_BUCKET_CSV`|This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item for adpod setup  and  `pwtecp` targeting for each line item for other setups. For Adpod setup set this parameter to one of the `Inline_Header_Bidding_{Price Granularity}.csv file`.| string|
-|`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE`. | string |
+|`OPENWRAP_CREATIVE_TEMPLATE` |The creative template name for Native Lineitems. This is only required when `OPENWRAP_SETUP_TYPE`=`NATIVE` or `IN_APP_NATIVE`. | string |
 |`VIDEO_LENTHS`| Sets the durations for adpod video creatives. This is only required when `OPENWRAP_SETUP_TYPE`=`ADPOD` |integer array|None|
 |`ADPOD_SLOTS`| Sets the slots position in a single Adpod. ex ADPOD_SLOTS = [1,2,3] for 1st, 2nd, 3rd slot of adpod. This is only required when `OPENWRAP_SETUP_TYPE`=`ADPOD`|integer Array|None|
 
@@ -117,12 +117,13 @@ If successful, it returns all the orders in your GAM account.
 |`DFP_NUM_CREATIVES_PER_LINE_ITEM`|The number of duplicate creatives to attach to each line item. Due to GAM limitations, this should be equal to or greater than the number of ad units you serve on a given page. |int|Length of setting, `DFP_TARGETED_PLACEMENT_NAMES`|
 |`DFP_CURRENCY_CODE`|National currency to use in line items.|string|`'USD'`|
 |`DFP_SAME_ADV_EXCEPTION`|Determines whether to set the "Same Advertiser Exception" on line items. Currently works only for OpenWrap.|bool|`False`|
-|`DFP_DEVICE_CATEGORIES`|Sets device category targetting for a Line item. Valid values: `Connected TV`, `Desktop`, `Feature Phone`, `Set Top Box`, `Smartphone`, and `Tablet`. Not applicable for 'IN_APP', 'IN_APP_VIDEO' and 'JWPLAYER'|string or array of strings|None|
+|`DFP_DEVICE_CATEGORIES`|Sets device category targetting for a Line item. Valid values: `Connected TV`, `Desktop`, `Feature Phone`, `Set Top Box`, `Smartphone`, and `Tablet`. Not applicable for 'IN_APP', 'IN_APP_VIDEO', 'IN_APP_NATIVE' and 'JWPLAYER'|string or array of strings|None|
 |`DFP_ROADBLOCK_TYPE`|Same as **Display Creatives** in previous Line Item Tool version. Valid values: `ONE_OR_MORE` and `AS_MANY_AS_POSSIBLE`.|string|None|
 |`LINE_ITEM_PREFIX`|The prefix to insert before a line-item name.|string|None|
-|`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. Not applicable for 'IN_APP', 'IN_APP_VIDEO' and 'JWPLAYER'|array of arrays (For example, `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.)|None|
+|`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. Not applicable for 'IN_APP', 'IN_APP_VIDEO', 'IN_APP_NATIVE' and 'JWPLAYER'|array of arrays (For example, `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.)|None|
 |`CURRENCY_EXCHANGE`|Same as **Currency Module** in the previous Line Item Tool. When used, this option converts the _rate_ calculated from CSV to the network's currency setting. This is applicable for `WEB`, `WEB_SAFEFRAME` and `NATIVE` only. |bool|True|
 |`OPENWRAP_USE_1x1_CREATIVE`| When this option is set, the tool creates a single creative with size 1x1 and all lineitems with size overrides. |bool|False|
+|`OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR`| When this option is set, the tool creates a string variable for NATIVE creative type. |string|None|
 
 ## Create Line Items for Prebid
 

@@ -159,3 +159,43 @@ class DFPCreateCreativesTests(TestCase):
       ]
     )
 
+  @patch('dfp.create_creatives.create_creative_config')
+  def test_create_creative_config_native(self, mock_create_creative_config,
+    mock_dfp_client):
+    """
+    Ensure we generate the correct native creative configs.
+    """
+
+    # Mock the input
+    name = 'IN_APP_NATIVE_xyz_native'
+    advertiser_id = 12345
+    creative_template_id = [123, 456]
+    user_def_var = 'pubmatic-ow-signal:%%PATTERN:pwtsid%%'
+
+    creative = dfp.create_creatives.create_creative_config_native(
+      name, advertiser_id, creative_template_id, user_def_var)
+
+    # Assert we created the correct config.
+    self.assertEqual(
+      creative,
+      {
+        'xsi_type': 'TemplateCreative',
+        'name': 'IN_APP_NATIVE_xyz_native',
+        'advertiserId': 12345,
+        'size': {
+          'width': '1',
+          'height': '1',
+          'isAspectRatio': False
+        },
+        'creativeTemplateId': [123, 456],
+        'destinationUrl': 'https://pubmatic.com/',
+        'creativeTemplateVariableValues': [{
+          'xsi_type': 'StringCreativeTemplateVariableValue',
+          'uniqueName': 'Title',
+          'value': 'pubmatic-ow-signal:%%PATTERN:pwtsid%%'
+        }],
+        'isSafeFrameCompatible': True,
+        'isNativeEligible': True
+      }
+    )
+    
