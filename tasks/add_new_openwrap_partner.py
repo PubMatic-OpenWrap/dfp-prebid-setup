@@ -858,6 +858,7 @@ def load_price_csv(filename, setup_type):
 
     precision = 3 
     if setup_type == constant.ADPOD:
+        currency_exchange = False
         precision = 2
 
     # Currency module/CURRENCY_EXCHANGE is applicable for web and native platform
@@ -885,6 +886,8 @@ def load_price_csv(filename, setup_type):
                     end_range = float(row[3])
                     granularity = float(row[4])
                     rate_id = int(row[5])
+                    if setup_type == constant.ADPOD:
+                        rate_id = 2
                 except ValueError:
                     raise BadSettingException('Start range, end range, granularity and rate id should be number. Please correct the csv and try again.')
 
