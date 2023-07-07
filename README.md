@@ -33,11 +33,19 @@ The Line Item Tool requires valid GAM credentials to access your  account. The 
 
 1.  If you haven't done so already, sign up for a [GAM account](https://admanager.google.com/).
 2.  Create Google developer credentials:
-    *   Go to the [Google Developers Console Credentials page](https://console.developers.google.com/apis/credentials).
-    *   On the **Credentials** page, select **Create credentials**, then select **Service account key**.
-    *   Select **New service account**, then select _JSON_ key type. You can leave the _role_ blank.
-    *   Use **Create** to download a file containing a `.json` private key.
-3.  Turn on API access to GAM:
+    * **Create a service account**
+      * Go to the [Google Developers Console Credentials page](https://console.developers.google.com/apis/credentials).
+      * On the **Credentials** page, select **Create credentials**, then select **Service account key**.
+      * Fill in the service account details, then click **Create and continue**.
+      * Click **Continue**. You can leave the _role_ blank.
+      * Click **Done**. Make a note of the email address for the service account.
+    * **Create credentials for a service account**
+        * In the Google Cloud console, go to Menu menu > **IAM & Admin > Service Accounts**.
+        * Select your service account.
+        * Click **Keys > Add key > Create new key.**
+        * Select **JSON**, then click **Create** to download a file containing a .json private key.
+        * Click **Close**.
+4.  Turn on API access to GAM:
     *   Sign into your [GAM account](https://admanager.google.com/)—_you must have admin rights_.
     *   In the **Admin** section, select **Global settings.**
     *   Turn on **API access** if it isn't already enabled.
