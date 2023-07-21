@@ -3,5 +3,5 @@ future==0.18.2
 googleads==38.0.0
 mock==3.0.5
 pycryptodome==3.13.0
-PyYAML==6.0.0
+PyYAML==6.0.1
 shortuuid==0.5.0
