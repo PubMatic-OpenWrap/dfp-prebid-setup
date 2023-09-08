@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import sys
+import tasks
 from builtins import input
 from pprint import pprint
 
@@ -31,7 +32,7 @@ import dfp.get_network
 import dfp.get_device_capabilities
 import dfp.get_orders
 import dfp.get_line_items
-
+import tasks.setup_deal_lineitem as lib
 from dfp.exceptions import (
   BadSettingException,
   MissingSettingException,
@@ -116,7 +117,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.PltValueGetter = None
         self.creativeTargeting = None
         self.pwtbst_value_id = None
-
+        self.deal_tier = None
     def init_keys(self):  
         # Get DFP key IDs for line item targeting.
         self.pwtpid_key_id = get_or_create_dfp_targeting_key('pwtpid', key_type='PREDEFINED')  # bidder
@@ -156,6 +157,18 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
     def get_creative_targeting(self, duration):    
         return self.creativeTargeting[duration]
     
+    def set_deal_tier(self, slot, deal_tier):
+        key = '{}_pwtdt'.format(slot)   
+        key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
+        value_getter = DFPValueIdGetter(key)  
+        value_id = value_getter.get_value_id(deal_tier)
+        self.deal_tier = {
+            'xsi_type': 'CustomCriteria',
+            'keyId': key_id,
+            'valueIds': [value_id],
+            'operator': 'IS'
+        }
+
     # Set pwtpb custom targeting key
     def set_bid_price(self, slot,price):
         key = '{}_pwtpb'.format(slot)   
@@ -323,6 +336,8 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         if self.price_set:
             top_set['children'].append(self.price_set)
 
+        if  self.deal_tier:
+            top_set['children'].append(self.deal_tier)
         # dont set other targetting for JW Player
         if self.setup_type is not constant.JW_PLAYER:
 
@@ -998,14 +1013,23 @@ def main():
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
 
   if setup_type == constant.ADPOD:
+    deal_lineitem_enabled = getattr(settings, 'ENABLE_DEAL_LINEITEM', False)
+    deal_config = getattr(settings, 'DEAL_CONFIG', None)
     adpod_creative_cache_url = getattr(settings, 'ADPOD_CREATIVE_CACHE_URL', constant.DEFAULT_APDOD_CACHE_URL)  
     constant.ADPOD_VIDEO_VAST_URL =  constant.ADPOD_VIDEO_VAST_URL.replace("{url}",adpod_creative_cache_url)
+  
   adpod_slots = getattr(settings, 'ADPOD_SLOTS', None)
   adpod_size = len(adpod_slots)
 
   if setup_type == constant.ADPOD and (adpod_slots == None or len(adpod_slots) == 0):
     raise MissingSettingException('The setting "ADPOD_SLOTS" must contain alteast one slot.')
-  
+
+  if  (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and lineitem_type != constant.LI_SPONSORSHIP:
+     raise  BadSettingException('DFP_LINEITEM_TYPE should be SPONSORSHIP for creating deal lineitems')
+ 
+  if (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and deal_config is None:
+     raise  MissingSettingException('Set valid DEAL_CONFIG for creating deal lineitems')
+ 
   adpod_creative_durations = getattr(settings, 'VIDEO_LENGTHS', None)
   if setup_type == constant.ADPOD and adpod_creative_durations is None:
     raise MissingSettingException('VIDEO_LENGTHS')
@@ -1092,21 +1116,6 @@ def main():
          if not isinstance(ct[2], (list, tuple, str, bool)):
              raise BadSettingException('OPENWRAP_CUSTOM_TARGETING - {0}'.format(type(ct[2])))
 
-  price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
-  if price_buckets_csv is None:
-    raise MissingSettingException('OPENWRAP_BUCKET_CSV')
-
-  prices = load_price_csv(price_buckets_csv, setup_type)
-
-  prices_summary = []
-  for p in prices:
-      prices_summary.append(p['rate'])
-  
-  if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
-       print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
-       .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
-       return
-
   # set bidder_code, custom_targetting, device categories to None when setup_type is IN-APP, JW_PLAYER
   # default roadblock_type to ONE_OR_MORE when setup_type is VIDEO, JW_PLAYER
   # default roadblock type to 'AS_MANY_AS_POSSIBLE' when setup_type is in-app
@@ -1126,6 +1135,59 @@ def main():
       roadblock_type = 'ONE_OR_MORE'
   elif setup_type == constant.ADPOD:
       roadblock_type = 'ONE_OR_MORE'
+
+  if setup_type == constant.ADPOD and deal_lineitem_enabled == True:
+        lib.print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type) 
+        ok = input('Is this correct? (y/n)\n')
+        if ok != 'y':
+            logger.info('Exiting.')
+            return
+        try:
+            # Get the user.
+          user_id = dfp.get_users.get_user_id_by_email(user_email)
+          # Get (or potentially create) the advertiser.
+          advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
+              advertiser_name, advertiser_type)
+          order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
+
+          for i in adpod_slots:
+              slot = "s{}".format(i) 
+              lib.setup_deal_lineitems(user_id,advertiser_id, order_id, placements,sizes,lineitem_type,lineitem_prefix,bidder_code,deal_config,
+              setup_type,num_creatives,use_1x1,currency_code,custom_targeting,same_adv_exception,device_categories,
+              device_capabilities,roadblock_type,slot,adpod_creative_durations,None)          
+
+          logger.info("""
+              Done! Please review your orders, line items, and creatives to
+              make sure they are correct. Then, approve the order in DFP.
+
+              Happy bidding!
+          """)  
+        except ConnectionError as e:
+          logger.error('\nConnection Error. Please try again after some time! Err: \n{}'.format(e))
+        except GoogleAdsServerFault as e:
+          if "ServerError.SERVER_ERROR" in str(e):
+            logger.error('\n\nDFP Server Error. Please try again after some time! Err: \n{}'.format(e))
+          else:
+            raise DFPException("\n\nError occured while creating Lineitems in DFP: \n {}".format(e))
+
+        return
+
+  price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
+  if price_buckets_csv is None:
+    raise MissingSettingException('OPENWRAP_BUCKET_CSV')
+
+  prices = load_price_csv(price_buckets_csv, setup_type)
+
+  prices_summary = []
+  for p in prices:
+      prices_summary.append(p['rate'])
+  
+  if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
+       print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
+       .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
+       return
+
+
 
   logger.info(
     u"""
@@ -1277,3 +1339,6 @@ def main():
 
 if __name__ == '__main__':
   main()
+
+
+

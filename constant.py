@@ -10,6 +10,8 @@ VIDEO="VIDEO"
 JW_PLAYER="JWPLAYER"
 ADPOD="ADPOD"
 
+LI_SPONSORSHIP = "SPONSORSHIP"
+
 #video specific creative params
 VIDEO_VAST_URL = 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:pwtcid%%'
 VIDEO_DURATION = 1000

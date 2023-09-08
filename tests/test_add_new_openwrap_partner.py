@@ -60,7 +60,7 @@ bidder_code = ['mypartner']
   DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST=False,
   CURRENCY_EXCHANGE=False,
   ADPOD_SLOTS=adpod_slots,
-  VIDEO_LENGTHS =adpod_creative_durations
+  VIDEO_LENGTHS =adpod_creative_durations,
   )
 @patch('googleads.ad_manager.AdManagerClient.LoadFromStorage')
 class AddNewOpenwrapPartnerTests(TestCase):
@@ -132,6 +132,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()     
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('settings.ENABLE_DEAL_LINEITEM', False, create=True)
   def test_missing_adpod_creative_duration(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
@@ -141,6 +142,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
       tasks.add_new_openwrap_partner.main()      
  
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('settings.ENABLE_DEAL_LINEITEM', False, create=True)
   def test_missing_adpod_duration_empty(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
@@ -149,11 +151,30 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_openwrap_partner.main()      
   
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('settings.ENABLE_DEAL_LINEITEM', True, create=True)
+  def test_invalid_adpod_lineitem_type(self, mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()      
+  
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('settings.ENABLE_DEAL_LINEITEM', True, create=True)
+  @patch('settings.DFP_LINEITEM_TYPE', "SPONSORSHIP", create=True)
+  def test_invalid_adpod_deal_config(self, mock_dfp_client):
+    """
+    It throws an exception with a missing setting.
+    """
+    settings.DEAL_CONFIG = None
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.main()
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.WEB, create=True)
   def test_missing_placement_size_in_other_than_native(self,mock_dfp_client):
     """
-    It throws an exception with a missing setting.
+    It throws an   exception with a missing setting.
     """
     settings.DFP_PLACEMENT_SIZES= None
     with self.assertRaises(MissingSettingException):
@@ -564,6 +585,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     self.assertEqual(args[19], 'ONE_OR_MORE')
 
   @patch('settings.OPENWRAP_SETUP_TYPE', constant.ADPOD, create=True)
+  @patch('settings.ENABLE_DEAL_LINEITEM', False, create=True)
   @patch('tasks.add_new_openwrap_partner.setup_partner')
   @patch('tasks.add_new_openwrap_partner.load_price_csv')
   @patch('tasks.add_new_openwrap_partner.input', return_value='y')
@@ -778,6 +800,62 @@ class AddNewOpenwrapPartnerTests(TestCase):
     mock_create_line_items.create_line_items.assert_called_once()
     mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='ADPOD', size_overrides=[], slot='s1')
 
+  @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
+  @patch('tasks.add_new_openwrap_partner.DFPValueIdGetter')
+  @patch('tasks.add_new_openwrap_partner.get_or_create_dfp_targeting_key')
+  @patch('dfp.associate_line_items_and_creatives')
+  @patch('dfp.create_creative_sets')
+  @patch('dfp.create_creatives')
+  @patch('dfp.create_line_items')
+  @patch('tasks.add_new_openwrap_partner.get_unique_id', return_value = 'ADPOD_xyz')
+  @patch('dfp.create_orders')
+  @patch('dfp.get_advertisers')
+  @patch('dfp.get_placements')
+  @patch('dfp.get_users')
+  def test_setup_partner_for_adpod(self, mock_get_users, mock_get_placements,
+    mock_get_advertisers, mock_create_orders, mock_get_unique_id,
+    mock_create_line_items, mock_create_creatives, mock_create_creative_sets, mock_licas, mock_dfp_client,
+    mock_get_or_create_dfp_targeting_key, mock_dfp_value_id_getter, mock_create_line_item_configs):
+    """
+    It calls all expected DFP functions.
+    """
+
+    mock_get_placements.get_placement_ids_by_name = MagicMock(
+      return_value=[1234567, 9876543])
+
+    mock_create_creatives.create_creatives = MagicMock(return_value = [54321,98765])
+    mock_create_creative_sets.create_creative_sets = MagicMock(return_value = [54321,98765])
+    mock_create_line_items.create_line_items = MagicMock(
+      return_value =[543210, 987650])
+
+    deal_config = {
+    "pubmatic": {
+      "prefix": [
+        "abc"
+      ],
+      "mindealtier": [
+        5
+      ],
+      "price": 10
+    }
+    }
+
+
+    tasks.setup_deal_lineitem.setup_deal_lineitems(user_id="134", advertiser_id = 246810, order_id="order_id", placements=placements,
+     sizes=adpod_creative_size, lineitem_type = lineitem_type,lineitem_prefix = 'LI_123', bidder_code=bidder_code, deal_config=deal_config, setup_type="ADPOD", num_creatives=3, use_1x1=False,
+     currency_code='USD', custom_targeting = None, same_adv_exception= False, device_categories=None, device_capabilities=None, 
+                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10], creative_user_def_var = None)
+
+    mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
+      placements)
+    
+    (mock_create_creatives.create_creative_configs_for_adpod
+      .assert_called_once_with(246810, adpod_creative_size, 'ADPOD_xyz', constant.ADPOD_VIDEO_VAST_URL,adpod_creative_durations,'s1'))
+    mock_create_creatives.create_creatives.assert_called_once()
+    mock_create_creative_sets.create_creative_set_config_adpod.assert_called_once_with([54321,98765], adpod_creative_size, 'ADPOD_xyz' , adpod_creative_durations,'s1')
+    mock_create_creative_sets.create_creative_sets.assert_called_once()
+    mock_create_line_items.create_line_items.assert_called_once()
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='ADPOD', size_overrides=[], slot='s1')
 
   @patch('tasks.add_new_openwrap_partner.create_line_item_configs')
   @patch('tasks.add_new_openwrap_partner.DFPValueIdGetter')
