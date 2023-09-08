@@ -174,7 +174,7 @@ CURRENCY_EXCHANGE = False
 # Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
 # This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
 # Represents the video length parameter on UI.
-VIDEO_LENGTHS = [10,15]
+VIDEO_LENGTHS = [10]
 
 #Optional
 #OpenWrap ADPOD_SLOTS
@@ -183,7 +183,26 @@ VIDEO_LENGTHS = [10,15]
 # ex ADPOD_SLOTS = [1,2,3], will create 1st, 2nd and 3rd slot of adpod
 # ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
 # Slot numbers should be in incremental order.
-ADPOD_SLOTS = [1,2,3]
+ADPOD_SLOTS = [1]
+
+# ENABLE_DEAL_LINEITEM
+# THis option is only for Adpod setup
+# Set ENABLE_DEAL_LINEITEM = True for creating deal line item
+# Defaults to False
+ENABLE_DEAL_LINEITEM = False
+
+# DEAL_CONFIG - configuration for creating deal lineitem
+# THis option is only for Adpod setup
+# Provide price, dealtier prefix and mindealtier values
+# Number of LineItem created = len(prefix)*len(mindealtier) for each bidder
+# LineItem wil be created with pwt_dt(dealtier)targeting with pwt_dt value as prefix[index] + mindealtier[index] for each bidder
+DEAL_CONFIG = {
+    "pubmatic":{
+        "price":10,
+        "prefix":["abc"],
+        "mindealtier":[5]
+    }
+}
 
 # Optional parameter to set creative cache url for adpod setup 
 # Defaults to ow.pubmatic.com
