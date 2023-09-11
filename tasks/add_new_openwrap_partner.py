@@ -699,7 +699,7 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
   lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, ad_unit_ids=None, same_adv_exception=False, 
   device_category_ids=None,device_capability_ids=None, roadblock_type='ONE_OR_MORE', durations = None, slot = None):
   """
-  Create a line item config for each price bucket.
+  Create a line item config for each dealtier.
 
   Args:
     prices (array)
