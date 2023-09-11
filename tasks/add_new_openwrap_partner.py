@@ -32,7 +32,6 @@ import dfp.get_network
 import dfp.get_device_capabilities
 import dfp.get_orders
 import dfp.get_line_items
-import tasks.setup_deal_lineitem as lib
 from dfp.exceptions import (
   BadSettingException,
   MissingSettingException,
@@ -490,7 +489,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
      sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
-     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var):
+     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var, deal_config, deal_lineitem_enabled):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
@@ -550,7 +549,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
     advertiser_name, advertiser_type)
  
-  if setup_type  == constant.ADPOD:
+  if setup_type  == constant.ADPOD and deal_lineitem_enabled == False:
     order = get_existing_order_details(slot, order_name)
     order_id = order['id']
     total_lineitem_count  = order['lic'] 
@@ -619,8 +618,14 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   else:
       logger.info("\ncreating line_items...")
 
-
-  line_items_config = create_line_item_configs(prices, order_id,
+  if setup_type == constant.ADPOD and deal_lineitem_enabled == True:
+      line_items_config = create_deal_line_item_configs(deal_config, order_id,
+      placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
+      currency_code, custom_targeting, setup_type, ad_unit_ids=ad_unit_ids, same_adv_exception=same_adv_exception,
+      device_category_ids=None, device_capability_ids=None, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
+       
+  else:    
+      line_items_config = create_line_item_configs(prices, order_id,
       placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
       currency_code, custom_targeting, setup_type, creative_template_ids, same_adv_exception=same_adv_exception,ad_unit_ids=ad_unit_ids,
       device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
@@ -641,6 +646,42 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
       creative_ids, size_overrides=size_overrides, setup_type=setup_type,slot=slot,durations=adpod_creative_durations)
     
 
+def print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots,lineitem_type):
+
+    li_count = 0
+    for bidder, cfg in deal_config.items():
+      li_count = li_count + len(cfg['prefix']) * len(cfg['mindealtier'])
+               
+
+    logger.info(
+      u"""
+      ADPOD Details :
+      
+      {name_start_format}Adpod Size{format_end}: {value_start_format}{adpod_size}{format_end}
+      {name_start_format}Adpod slot positions{format_end}: {value_start_format}{adpod_slot}{format_end}
+      {name_start_format}Adpod creative Durations{format_end}: {adpod_creative_durations}{format_end}
+      {name_start_format}Line Item per each slot{format_end}: {value_start_format}{lineitem_per_slot}{format_end}
+      {name_start_format}Creatives per each slot{format_end}: {value_start_format}{creatives_per_slot}{format_end}
+      {name_start_format}Total number of Line Items{format_end}: {value_start_format}{lineitem_total}{format_end}
+      {name_start_format}Total number of Creatives{format_end}: {value_start_format}{creatives_total}{format_end}      
+      {name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}      
+      {name_start_format}Deal Config{format_end}: {value_start_format}{deal_config}{format_end}            
+        """.format(
+        adpod_size = adpod_size,
+        adpod_slot = adpod_slots,
+        lineitem_per_slot = li_count,
+        adpod_creative_durations = adpod_creative_durations,
+        creatives_per_slot= len(adpod_creative_durations),
+        lineitem_total = li_count*adpod_size,
+        creatives_total= adpod_size * len(adpod_creative_durations),
+        lineitem_type = lineitem_type,
+        deal_config = deal_config,
+        name_start_format=color.BOLD,
+        format_end=color.END,
+        value_start_format=color.BLUE,
+    ))  
+
+
 def get_creative_file(setup_type):
     creative_file = "creative_snippet_openwrap.html"
     if setup_type == constant.WEB:
@@ -653,6 +694,88 @@ def get_creative_file(setup_type):
         creative_file = "creative_snippet_openwrap_in_app.html"
 
     return creative_file
+
+def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_code, sizes, key_gen_obj,
+  lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, ad_unit_ids=None, same_adv_exception=False, 
+  device_category_ids=None,device_capability_ids=None, roadblock_type='ONE_OR_MORE', durations = None, slot = None):
+  """
+  Create a line item config for each price bucket.
+
+  Args:
+    prices (array)
+    order_id (int)
+    placement_ids (arr)
+    bidder_code (str or arr)
+    sizes (arr)
+    key_gen_obj (obj)
+    lineitem_type (str)
+    lineitem_prefix (str)
+    currency_code (str)
+    custom_targeting (arr)
+    setup_type (str)
+    creative_template_ids (arr)
+    ad_unit_ids (arr)
+    same_adv_exception(bool)
+    device_category_ids (int)
+    device_capability_ids (int)
+    roadblock_type (str)
+    durations(array)
+    slot(string) 
+  Returns:
+    an array of objects: the array of DFP line item configurations
+  """
+
+ 
+  key_gen_obj.set_setup_type(setup_type)
+
+  # Set DFP targeting for custom targetting passed in settings.py
+  key_gen_obj.set_custom_targeting(custom_targeting)
+  key_gen_obj.set_creative_targeting(durations,slot)  
+
+  line_items_config = []
+     
+  #create line item config for each price
+  for bidder, cfg in deal_config.items():
+    if bidder_code is not None:
+        found = False
+        for bc in bidder_code:
+            if bidder == bc:
+                found = True
+                break
+        if found:
+            key_gen_obj.set_bidder_value(bidder_code, slot)
+
+    for prefix in cfg['prefix']:
+        for mdt in cfg['mindealtier']:
+            dealtier = prefix + str(mdt)
+            key_gen_obj.set_deal_tier(slot, dealtier)
+            # Autogenerate the line item name. (prefix_rate)
+            line_item_name = '{}_{}_{}_{}'.format(slot, lineitem_prefix, bidder, dealtier)
+
+            config = dfp.create_line_items.create_line_item_config(
+              name=line_item_name,
+              order_id=order_id,
+              placement_ids=placement_ids,
+              cpm_micro_amount=num_to_micro_amount(round(cfg['price'],2)),
+              sizes=sizes,
+              key_gen_obj=key_gen_obj,
+              lineitem_type=lineitem_type,
+              currency_code=currency_code,
+              setup_type=setup_type,
+              creative_template_ids=None,
+              ad_unit_ids=ad_unit_ids,
+              same_adv_exception=same_adv_exception,
+              device_categories=device_category_ids,
+              device_capabilities=device_capability_ids,
+              roadblock_type=roadblock_type,
+              durations=durations,
+              slot=slot
+            )
+
+            line_items_config.append(config)
+
+  return line_items_config
+
 
 def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes, key_gen_obj,
   lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, creative_template_ids,
@@ -1012,6 +1135,7 @@ def main():
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER, constant.ADPOD]:
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
   
+  deal_config = None
   deal_lineitem_enabled = False
   if setup_type == constant.ADPOD:
     deal_lineitem_enabled = getattr(settings, 'ENABLE_DEAL_LINEITEM', False)
@@ -1137,6 +1261,7 @@ def main():
   elif setup_type == constant.ADPOD:
       roadblock_type = 'ONE_OR_MORE'
 
+  prices = None  
   # Calculate price only for price based lineitems   
   if deal_lineitem_enabled == False :
     price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
@@ -1226,7 +1351,7 @@ def main():
         ))
   else:
     # Prininting adpod deal lineitem summary
-    lib.print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type) 
+    print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type) 
         
   ok = input('Is this correct? (y/n)\n')
 
@@ -1238,45 +1363,37 @@ def main():
     if setup_type == constant.ADPOD: 
         for i in adpod_slots:
             slot = "s{}".format(i) 
-            if  deal_lineitem_enabled == True:
-                # Get the user.
-                user_id = dfp.get_users.get_user_id_by_email(user_email)
-                # Get (or potentially create) the advertiser.
-                advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
-                    advertiser_name, advertiser_type)
-                order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
-                lib.setup_deal_lineitems(user_id,advertiser_id, order_id, placements,sizes,lineitem_type,lineitem_prefix,bidder_code,deal_config,
-                setup_type,num_creatives,use_1x1,currency_code,custom_targeting,same_adv_exception,device_categories,
-                device_capabilities,roadblock_type,slot,adpod_creative_durations,None)          
-            else:
-                setup_partner(
-                        user_email,
-                        advertiser_name,
-                        advertiser_type,
-                        order_name,
-                        placements,
-                        sizes,
-                        lineitem_type,
-                        lineitem_prefix,
-                        bidder_code,
-                        prices,
-                        setup_type,
-                        creative_template,
-                        num_creatives,
-                        use_1x1,
-                        currency_code,
-                        custom_targeting,
-                        same_adv_exception,
-                        device_categories,
-                        device_capabilities,
-                        roadblock_type,
-                        slot,
-                        adpod_creative_durations,
-                        None
-                )
-        
+            setup_partner(
+                    user_email,
+                    advertiser_name,
+                    advertiser_type,
+                    order_name,
+                    placements,
+                    sizes,
+                    lineitem_type,
+                    lineitem_prefix,
+                    bidder_code,
+                    prices,
+                    setup_type,
+                    creative_template,
+                    num_creatives,
+                    use_1x1,
+                    currency_code,
+                    custom_targeting,
+                    same_adv_exception,
+                    device_categories,
+                    device_capabilities,
+                    roadblock_type,
+                    slot,
+                    adpod_creative_durations,
+                    None,
+                    deal_config,
+                    deal_lineitem_enabled,
+            )
+
+            if deal_lineitem_enabled == False:
                 logger.info(""" 
-                
+
                 Orders Created: """ + str(order_list))    
     else:
         setup_partner(
@@ -1302,7 +1419,9 @@ def main():
                     roadblock_type,
                     None,
                     None,
-                    creative_user_def_var
+                    creative_user_def_var,
+                    deal_config,
+                    deal_lineitem_enabled,
             )  
     logger.info("""
 
