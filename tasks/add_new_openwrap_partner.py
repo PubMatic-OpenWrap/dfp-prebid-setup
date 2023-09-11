@@ -1011,7 +1011,8 @@ def main():
   elif setup_type not in [constant.WEB, constant.WEB_SAFEFRAME, constant.AMP, constant.IN_APP, constant.IN_APP_VIDEO, constant.IN_APP_NATIVE,
     constant.NATIVE, constant.VIDEO, constant.JW_PLAYER, constant.ADPOD]:
     raise BadSettingException('Unknown OPENWRAP_SETUP_TYPE: {0}'.format(setup_type))
-
+  
+  deal_lineitem_enabled = False
   if setup_type == constant.ADPOD:
     deal_lineitem_enabled = getattr(settings, 'ENABLE_DEAL_LINEITEM', False)
     deal_config = getattr(settings, 'DEAL_CONFIG', None)
@@ -1136,126 +1137,97 @@ def main():
   elif setup_type == constant.ADPOD:
       roadblock_type = 'ONE_OR_MORE'
 
-  if setup_type == constant.ADPOD and deal_lineitem_enabled == True:
-        lib.print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type) 
-        ok = input('Is this correct? (y/n)\n')
-        if ok != 'y':
-            logger.info('Exiting.')
-            return
-        try:
-            # Get the user.
-          user_id = dfp.get_users.get_user_id_by_email(user_email)
-          # Get (or potentially create) the advertiser.
-          advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
-              advertiser_name, advertiser_type)
-          order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
+  # Calculate price only for price based lineitems   
+  if deal_lineitem_enabled == False :
+    price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
+    if price_buckets_csv is None:
+        raise MissingSettingException('OPENWRAP_BUCKET_CSV')
 
-          for i in adpod_slots:
-              slot = "s{}".format(i) 
-              lib.setup_deal_lineitems(user_id,advertiser_id, order_id, placements,sizes,lineitem_type,lineitem_prefix,bidder_code,deal_config,
-              setup_type,num_creatives,use_1x1,currency_code,custom_targeting,same_adv_exception,device_categories,
-              device_capabilities,roadblock_type,slot,adpod_creative_durations,None)          
+    prices = load_price_csv(price_buckets_csv, setup_type)
 
-          logger.info("""
-              Done! Please review your orders, line items, and creatives to
-              make sure they are correct. Then, approve the order in DFP.
-
-              Happy bidding!
-          """)  
-        except ConnectionError as e:
-          logger.error('\nConnection Error. Please try again after some time! Err: \n{}'.format(e))
-        except GoogleAdsServerFault as e:
-          if "ServerError.SERVER_ERROR" in str(e):
-            logger.error('\n\nDFP Server Error. Please try again after some time! Err: \n{}'.format(e))
-          else:
-            raise DFPException("\n\nError occured while creating Lineitems in DFP: \n {}".format(e))
-
+    prices_summary = []
+    for p in prices:
+        prices_summary.append(p['rate'])
+    
+    if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
+        print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
+        .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
         return
 
-  price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
-  if price_buckets_csv is None:
-    raise MissingSettingException('OPENWRAP_BUCKET_CSV')
 
-  prices = load_price_csv(price_buckets_csv, setup_type)
-
-  prices_summary = []
-  for p in prices:
-      prices_summary.append(p['rate'])
-  
-  if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
-       print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
-       .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
-       return
-
-
-
-  logger.info(
-    u"""
-
-    Going to create {name_start_format}{num_line_items}{format_end} new line items.
-      {name_start_format}Order{format_end}: {value_start_format}{order_name}{format_end}
-      {name_start_format}Advertiser{format_end}: {value_start_format}{advertiser}{format_end}
-      {name_start_format}Advertiser Type{format_end}: {value_start_format}{advertiser_type}{format_end}
-      {name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}
-      {name_start_format}LineItem Prefix{format_end}: {value_start_format}{lineitem_prefix}{format_end}
-      {name_start_format}Setup Type{format_end} = {value_start_format}{setup_type}{format_end}
-      {name_start_format}Use 1x1 Creative{format_end} = {value_start_format}{use_1x1}{format_end}
-        
-    Line items will have targeting:
-      {name_start_format}rates{format_end} = {value_start_format}{prices_summary}{format_end}
-      {name_start_format}bidders{format_end} = {value_start_format}{bidder_code}{format_end}
-      {name_start_format}placements{format_end} = {value_start_format}{placements}{format_end}
-      {name_start_format}custom targeting{format_end} = {value_start_format}{custom_targeting}{format_end}
-      {name_start_format}same advertiser exception{format_end} = {value_start_format}{same_adv_exception}{format_end}
-      {name_start_format}device categories{format_end} = {value_start_format}{device_categories}{format_end}
-      {name_start_format}device capabilities{format_end} = {value_start_format}{device_capabilities}{format_end}
-      {name_start_format}roadblock type{format_end} = {value_start_format}{roadblock_type}{format_end}
-    """.format(
-      num_line_items = len(prices),
-      order_name=order_name,
-      advertiser=advertiser_name,
-      advertiser_type=advertiser_type,
-      lineitem_type=lineitem_type,
-      lineitem_prefix=lineitem_prefix,
-      setup_type=setup_type,
-      user_email=user_email,
-      prices_summary=prices_summary,
-      bidder_code=bidder_code,
-      placements=placements_print,
-      sizes=sizes,
-      custom_targeting=custom_targeting,
-      same_adv_exception=same_adv_exception,
-      device_categories=device_categories,
-      device_capabilities=device_capabilities,
-      roadblock_type=roadblock_type,
-      use_1x1=use_1x1,
-      name_start_format=color.BOLD,
-      format_end=color.END,
-      value_start_format=color.BLUE,
-    ))
-
-  if setup_type == constant.ADPOD:
+  if deal_lineitem_enabled == False: 
+    # Prininting non adpod lineitem summary
     logger.info(
-      u"""
-      ADPOD Details :
-      {name_start_format}Adpod Size{format_end}: {value_start_format}{adpod_size}{format_end}
-      {name_start_format}Adpod creative Durations{format_end}: {adpod_creative_durations}{format_end}
-      {name_start_format}Line Item per each slot{format_end}: {value_start_format}{lineitem_per_slot}{format_end}
-      {name_start_format}Creatives per each slot{format_end}: {value_start_format}{creatives_per_slot}{format_end}
-      {name_start_format}Total number of Line Items{format_end}: {value_start_format}{lineitem_total}{format_end}
-      {name_start_format}Total number of Creatives{format_end}: {value_start_format}{creatives_total}{format_end}      
-       """.format(
-        adpod_size = adpod_size,
-        lineitem_per_slot = len(prices),
-        adpod_creative_durations = adpod_creative_durations,
-        creatives_per_slot= len(adpod_creative_durations),
-        lineitem_total = len(prices)*adpod_size,
-        creatives_total= adpod_size * len(adpod_creative_durations),
+        u"""
+
+        Going to create {name_start_format}{num_line_items}{format_end} new line items.
+        {name_start_format}Order{format_end}: {value_start_format}{order_name}{format_end}
+        {name_start_format}Advertiser{format_end}: {value_start_format}{advertiser}{format_end}
+        {name_start_format}Advertiser Type{format_end}: {value_start_format}{advertiser_type}{format_end}
+        {name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}
+        {name_start_format}LineItem Prefix{format_end}: {value_start_format}{lineitem_prefix}{format_end}
+        {name_start_format}Setup Type{format_end} = {value_start_format}{setup_type}{format_end}
+        {name_start_format}Use 1x1 Creative{format_end} = {value_start_format}{use_1x1}{format_end}
+            
+        Line items will have targeting:
+        {name_start_format}rates{format_end} = {value_start_format}{prices_summary}{format_end}
+        {name_start_format}bidders{format_end} = {value_start_format}{bidder_code}{format_end}
+        {name_start_format}placements{format_end} = {value_start_format}{placements}{format_end}
+        {name_start_format}custom targeting{format_end} = {value_start_format}{custom_targeting}{format_end}
+        {name_start_format}same advertiser exception{format_end} = {value_start_format}{same_adv_exception}{format_end}
+        {name_start_format}device categories{format_end} = {value_start_format}{device_categories}{format_end}
+        {name_start_format}device capabilities{format_end} = {value_start_format}{device_capabilities}{format_end}
+        {name_start_format}roadblock type{format_end} = {value_start_format}{roadblock_type}{format_end}
+        """.format(
+        num_line_items = len(prices),
+        order_name=order_name,
+        advertiser=advertiser_name,
+        advertiser_type=advertiser_type,
+        lineitem_type=lineitem_type,
+        lineitem_prefix=lineitem_prefix,
+        setup_type=setup_type,
+        user_email=user_email,
+        prices_summary=prices_summary,
+        bidder_code=bidder_code,
+        placements=placements_print,
+        sizes=sizes,
+        custom_targeting=custom_targeting,
+        same_adv_exception=same_adv_exception,
+        device_categories=device_categories,
+        device_capabilities=device_capabilities,
+        roadblock_type=roadblock_type,
+        use_1x1=use_1x1,
         name_start_format=color.BOLD,
         format_end=color.END,
         value_start_format=color.BLUE,
-    ))
+        ))
 
+    if setup_type == constant.ADPOD:
+        # Prininting adpod price based lineitem summary
+        logger.info(
+        u"""
+        ADPOD Details :
+        {name_start_format}Adpod Size{format_end}: {value_start_format}{adpod_size}{format_end}
+        {name_start_format}Adpod creative Durations{format_end}: {adpod_creative_durations}{format_end}
+        {name_start_format}Line Item per each slot{format_end}: {value_start_format}{lineitem_per_slot}{format_end}
+        {name_start_format}Creatives per each slot{format_end}: {value_start_format}{creatives_per_slot}{format_end}
+        {name_start_format}Total number of Line Items{format_end}: {value_start_format}{lineitem_total}{format_end}
+        {name_start_format}Total number of Creatives{format_end}: {value_start_format}{creatives_total}{format_end}      
+        """.format(
+            adpod_size = adpod_size,
+            lineitem_per_slot = len(prices),
+            adpod_creative_durations = adpod_creative_durations,
+            creatives_per_slot= len(adpod_creative_durations),
+            lineitem_total = len(prices)*adpod_size,
+            creatives_total= adpod_size * len(adpod_creative_durations),
+            name_start_format=color.BOLD,
+            format_end=color.END,
+            value_start_format=color.BLUE,
+        ))
+  else:
+    # Prininting adpod deal lineitem summary
+    lib.print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type) 
+        
   ok = input('Is this correct? (y/n)\n')
 
   if ok != 'y':
@@ -1263,38 +1235,49 @@ def main():
     return
 
   try:
-    if setup_type == constant.ADPOD:
+    if setup_type == constant.ADPOD: 
         for i in adpod_slots:
             slot = "s{}".format(i) 
-            setup_partner(
-                    user_email,
-                    advertiser_name,
-                    advertiser_type,
-                    order_name,
-                    placements,
-                    sizes,
-                    lineitem_type,
-                    lineitem_prefix,
-                    bidder_code,
-                    prices,
-                    setup_type,
-                    creative_template,
-                    num_creatives,
-                    use_1x1,
-                    currency_code,
-                    custom_targeting,
-                    same_adv_exception,
-                    device_categories,
-                    device_capabilities,
-                    roadblock_type,
-                    slot,
-                    adpod_creative_durations,
-                    None
-            )
+            if  deal_lineitem_enabled == True:
+                # Get the user.
+                user_id = dfp.get_users.get_user_id_by_email(user_email)
+                # Get (or potentially create) the advertiser.
+                advertiser_id = dfp.get_advertisers.get_advertiser_id_by_name(
+                    advertiser_name, advertiser_type)
+                order_id = dfp.create_orders.create_order(order_name, advertiser_id, user_id)
+                lib.setup_deal_lineitems(user_id,advertiser_id, order_id, placements,sizes,lineitem_type,lineitem_prefix,bidder_code,deal_config,
+                setup_type,num_creatives,use_1x1,currency_code,custom_targeting,same_adv_exception,device_categories,
+                device_capabilities,roadblock_type,slot,adpod_creative_durations,None)          
+            else:
+                setup_partner(
+                        user_email,
+                        advertiser_name,
+                        advertiser_type,
+                        order_name,
+                        placements,
+                        sizes,
+                        lineitem_type,
+                        lineitem_prefix,
+                        bidder_code,
+                        prices,
+                        setup_type,
+                        creative_template,
+                        num_creatives,
+                        use_1x1,
+                        currency_code,
+                        custom_targeting,
+                        same_adv_exception,
+                        device_categories,
+                        device_capabilities,
+                        roadblock_type,
+                        slot,
+                        adpod_creative_durations,
+                        None
+                )
         
-        logger.info(""" 
-        
-        Orders Created: """ + str(order_list))    
+                logger.info(""" 
+                
+                Orders Created: """ + str(order_list))    
     else:
         setup_partner(
                     user_email,
