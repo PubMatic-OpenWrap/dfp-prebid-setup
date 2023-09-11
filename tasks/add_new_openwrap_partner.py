@@ -1241,6 +1241,24 @@ def main():
          if not isinstance(ct[2], (list, tuple, str, bool)):
              raise BadSettingException('OPENWRAP_CUSTOM_TARGETING - {0}'.format(type(ct[2])))
 
+  prices = None  
+  # Calculate price only for price based lineitems   
+  if deal_lineitem_enabled == False :
+    price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
+    if price_buckets_csv is None:
+        raise MissingSettingException('OPENWRAP_BUCKET_CSV')
+
+    prices = load_price_csv(price_buckets_csv, setup_type)
+
+    prices_summary = []
+    for p in prices:
+        prices_summary.append(p['rate'])
+    
+    if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
+        print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
+        .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
+        return
+
   # set bidder_code, custom_targetting, device categories to None when setup_type is IN-APP, JW_PLAYER
   # default roadblock_type to ONE_OR_MORE when setup_type is VIDEO, JW_PLAYER
   # default roadblock type to 'AS_MANY_AS_POSSIBLE' when setup_type is in-app
@@ -1260,24 +1278,6 @@ def main():
       roadblock_type = 'ONE_OR_MORE'
   elif setup_type == constant.ADPOD:
       roadblock_type = 'ONE_OR_MORE'
-
-  prices = None  
-  # Calculate price only for price based lineitems   
-  if deal_lineitem_enabled == False :
-    price_buckets_csv = getattr(settings, 'OPENWRAP_BUCKET_CSV', None)
-    if price_buckets_csv is None:
-        raise MissingSettingException('OPENWRAP_BUCKET_CSV')
-
-    prices = load_price_csv(price_buckets_csv, setup_type)
-
-    prices_summary = []
-    for p in prices:
-        prices_summary.append(p['rate'])
-    
-    if len(prices) > constant.LINE_ITEMS_LIMIT and setup_type != constant.ADPOD:
-        print('\n Error: {} Lineitems will be created. This is exceeding Line items count per order of {}!\n'
-        .format(len(prices),constant.LINE_ITEMS_LIMIT)) 
-        return
 
 
   if deal_lineitem_enabled == False: 
