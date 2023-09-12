@@ -12,6 +12,9 @@ ADPOD="ADPOD"
 
 LI_SPONSORSHIP = "SPONSORSHIP"
 
+PREFIX = 'prefix'
+MIN_DEAL_TIER = 'mindealtier'
+
 #video specific creative params
 VIDEO_VAST_URL = 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:pwtcid%%'
 VIDEO_DURATION = 1000
