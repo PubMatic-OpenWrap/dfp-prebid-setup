@@ -646,17 +646,27 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
       creative_ids, size_overrides=size_overrides, setup_type=setup_type,slot=slot,durations=adpod_creative_durations)
     
 
-def print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots,lineitem_type):
+def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type,  lineitem_prefix,
+        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type):
 
+    dealtiers=[]
     li_count = 0
     for bidder, cfg in deal_config.items():
-      li_count = li_count + len(cfg['prefix']) * len(cfg['mindealtier'])
-               
+      li_count = li_count + len(cfg[constant.PREFIX]) * len(cfg[constant.MIN_DEAL_TIER])
+      for prefix in cfg[constant.PREFIX]:
+        for mdt in cfg[constant.MIN_DEAL_TIER]:
+            dealtiers.append(prefix + str(mdt))  
 
     logger.info(
       u"""
       ADPOD Details :
       
+      {name_start_format}Order{format_end}: {value_start_format}{order_name}{format_end}
+      {name_start_format}Advertiser{format_end}: {value_start_format}{advertiser}{format_end}
+      {name_start_format}Advertiser Type{format_end}: {value_start_format}{advertiser_type}{format_end}
+      {name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}
+      {name_start_format}LineItem Prefix{format_end}: {value_start_format}{lineitem_prefix}{format_end}
+      {name_start_format}Setup Type{format_end} = {value_start_format}{setup_type}{format_end}
       {name_start_format}Adpod Size{format_end}: {value_start_format}{adpod_size}{format_end}
       {name_start_format}Adpod slot positions{format_end}: {value_start_format}{adpod_slot}{format_end}
       {name_start_format}Adpod creative Durations{format_end}: {adpod_creative_durations}{format_end}
@@ -666,16 +676,38 @@ def print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots
       {name_start_format}Total number of Creatives{format_end}: {value_start_format}{creatives_total}{format_end}      
       {name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}      
       {name_start_format}Deal Config{format_end}: {value_start_format}{deal_config}{format_end}            
-        """.format(
+      
+      Line items will have targeting:
+      {name_start_format}Dealtiers{format_end} = {value_start_format}{dealtiers}{format_end}
+      {name_start_format}Bidders{format_end} = {value_start_format}{bidder_code}{format_end}
+      {name_start_format}Placements{format_end} = {value_start_format}{placements}{format_end}
+      {name_start_format}Custom targeting{format_end} = {value_start_format}{custom_targeting}{format_end}
+      {name_start_format}Same advertiser exception{format_end} = {value_start_format}{same_adv_exception}{format_end}
+      {name_start_format}Roadblock type{format_end} = {value_start_format}{roadblock_type}{format_end}
+  
+      """.format(
+        order_name=order_name,
+        advertiser=advertiser_name,
+        advertiser_type=advertiser_type,
+        lineitem_type=lineitem_type,
+        lineitem_prefix=lineitem_prefix,
+        setup_type=setup_type,
+        user_email=user_email,
         adpod_size = adpod_size,
         adpod_slot = adpod_slots,
         lineitem_per_slot = li_count,
+        lineitem_total = li_count*adpod_size,
         adpod_creative_durations = adpod_creative_durations,
         creatives_per_slot= len(adpod_creative_durations),
-        lineitem_total = li_count*adpod_size,
         creatives_total= adpod_size * len(adpod_creative_durations),
-        lineitem_type = lineitem_type,
         deal_config = deal_config,
+        dealtiers = dealtiers,
+        bidder_code = bidder_code,
+        placements=placements_print,
+        sizes=sizes,
+        custom_targeting=custom_targeting,
+        same_adv_exception=same_adv_exception,
+        roadblock_type=roadblock_type,
         name_start_format=color.BOLD,
         format_end=color.END,
         value_start_format=color.BLUE,
@@ -737,16 +769,14 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
   #create line item config for each price
   for bidder, cfg in deal_config.items():
     if bidder_code is not None:
-        found = False
         for bc in bidder_code:
             if bidder == bc:
-                found = True
+                key_gen_obj.set_bidder_value(bidder_code, slot)
                 break
-        if found:
-            key_gen_obj.set_bidder_value(bidder_code, slot)
+        
 
-    for prefix in cfg['prefix']:
-        for mdt in cfg['mindealtier']:
+    for prefix in cfg[constant.PREFIX]:
+        for mdt in cfg[constant.MIN_DEAL_TIER]:
             dealtier = prefix + str(mdt)
             key_gen_obj.set_deal_tier(slot, dealtier)
             # Autogenerate the line item name. (prefix_rate)
@@ -1351,7 +1381,8 @@ def main():
         ))
   else:
     # Prininting adpod deal lineitem summary
-    print_summary(adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type) 
+    print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type,  lineitem_prefix,
+        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type) 
         
   ok = input('Is this correct? (y/n)\n')
 
