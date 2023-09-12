@@ -174,7 +174,7 @@ CURRENCY_EXCHANGE = False
 # Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
 # This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
 # Represents the video length parameter on UI.
-VIDEO_LENGTHS = [10,15]
+VIDEO_LENGTHS = []
 
 #Optional
 #OpenWrap ADPOD_SLOTS
@@ -183,7 +183,7 @@ VIDEO_LENGTHS = [10,15]
 # ex ADPOD_SLOTS = [1,2,3], will create 1st, 2nd and 3rd slot of adpod
 # ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
 # Slot numbers should be in incremental order.
-ADPOD_SLOTS = [1,2,3]
+ADPOD_SLOTS = []
 
 # ENABLE_DEAL_LINEITEM
 # THis option is only for Adpod setup
