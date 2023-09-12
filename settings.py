@@ -195,7 +195,9 @@ ENABLE_DEAL_LINEITEM = False
 # THis option is only for Adpod setup
 # Provide price, dealtier prefix and mindealtier values
 # Number of LineItem created = len(prefix)*len(mindealtier) for each bidder
-# LineItem wil be created with pwt_dt(dealtier)targeting with pwt_dt value as prefix[index] + mindealtier[index] for each bidder
+# LineItem wil be created with pwtdt(dealtier)targeting with pwtdt value as prefix[index] + mindealtier[index] for each bidder
+# LineItem wil be created with pwtdt(dealtier)targeting with pwtdt value as prefix[index] + mindealtier[index] for each bidder
+# Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True for creating deal lineitem
 DEAL_CONFIG = {
     "pubmatic":{
         "price":10,
