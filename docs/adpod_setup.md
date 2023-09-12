@@ -18,7 +18,7 @@
 |`PREBID_BIDDER_CODE` | Bidder codes to target bidders with one line item. <br>Ex `PREBID_BIDDER_CODE = ['pubmatic']`. This parameter is mandatory for bidder level reporting. Set to `None` to generate line items for all partners.   | string array|
 |`OPENWRAP_BUCKET_CSV` | Set this to one of the csv file mentioned in ` Inline Header Bidding  csv` table  below. This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item..| string |
 |`ENABLE_DEAL_LINEITEM` | Set this value to `TRUE` for creating deal line items| boolean |
-|`DEAL_CONFIG` | Configuration for creating deal lineitem. Set this if `ENABLE_DEAL_LINEITEM` is set to `TRUE`. `DEAL_CONFIG` should have price, array of prefix and array of mindealtier values. Ex: `{"pubmatic":{"price":10,"prefix":["abc"],"mindealtier":[5]}}` | object |
+|`DEAL_CONFIG` | Configuration for creating deal lineitem. Set this if `ENABLE_DEAL_LINEITEM` is set to `TRUE`. `DEAL_CONFIG` should have price, array of prefix and array of mindealtier values. Ex: `{"pubmatic":{"price":10,"prefix":["abc"],"mindealtier":[5]}}`, `DFP_CURRENCY_CODE` will determine the currency with which lineitem is created. | object |
 
 
 
