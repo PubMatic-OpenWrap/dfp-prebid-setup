@@ -769,12 +769,16 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
   #create line item config for each price
   for bidder, cfg in deal_config.items():
     if bidder_code is not None:
+        found = False
         for bc in bidder_code:
             if bidder == bc:
-                key_gen_obj.set_bidder_value(bidder_code, slot)
+                found = True
                 break
-        
-
+        if found == True:
+            key_gen_obj.set_bidder_value(bidder_code, slot)
+        else:
+            key_gen_obj.set_bidder_value(None, slot)
+ 
     for prefix in cfg[constant.PREFIX]:
         for mdt in cfg[constant.MIN_DEAL_TIER]:
             dealtier = prefix + str(mdt)
@@ -1309,7 +1313,7 @@ def main():
   elif setup_type == constant.ADPOD:
       roadblock_type = 'ONE_OR_MORE'
 
-
+    
   if deal_lineitem_enabled == False: 
     # Prininting non adpod lineitem summary
     logger.info(
