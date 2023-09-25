@@ -652,9 +652,9 @@ def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_c
     dealtiers=[]
     li_count = 0
     for bidder, cfg in deal_config.items():
-      li_count = li_count + len(cfg[constant.PREFIX]) * len(cfg[constant.MIN_DEAL_TIER])
+      li_count = li_count + len(cfg[constant.PREFIX]) * len(cfg[constant.DEALPRIORITY])
       for prefix in cfg[constant.PREFIX]:
-        for mdt in cfg[constant.MIN_DEAL_TIER]:
+        for mdt in cfg[constant.DEALPRIORITY]:
             dealtiers.append(prefix + str(mdt))  
 
     logger.info(
@@ -780,8 +780,8 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
             key_gen_obj.set_bidder_value(None, slot)
  
     for prefix in cfg[constant.PREFIX]:
-        for mdt in cfg[constant.MIN_DEAL_TIER]:
-            dealtier = prefix + str(mdt)
+        for dp in cfg[constant.DEALPRIORITY]:
+            dealtier = prefix + str(dp)
             key_gen_obj.set_deal_tier(slot, dealtier)
             # Autogenerate the line item name. (prefix_rate)
             line_item_name = '{}_{}_{}_{}'.format(slot, lineitem_prefix, bidder, dealtier)
@@ -1173,7 +1173,7 @@ def main():
   deal_lineitem_enabled = False
   if setup_type == constant.ADPOD:
     deal_lineitem_enabled = getattr(settings, 'ENABLE_DEAL_LINEITEM', False)
-    deal_config = getattr(settings, 'DEAL_CONFIG', None)
+    deal_config = getattr(settings, 'DEALTIER_CONFIG', None)
     adpod_creative_cache_url = getattr(settings, 'ADPOD_CREATIVE_CACHE_URL', constant.DEFAULT_APDOD_CACHE_URL)  
     constant.ADPOD_VIDEO_VAST_URL =  constant.ADPOD_VIDEO_VAST_URL.replace("{url}",adpod_creative_cache_url)
   

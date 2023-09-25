@@ -198,7 +198,7 @@ ENABLE_DEAL_LINEITEM = False
 # LineItem wil be created with pwtdt(dealtier)targeting with pwtdt value as prefix[index] + mindealtier[index] for each bidder
 # Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True for creating deal lineitem
 # Example: DEAL_CONFIG = {"pubmatic":{"price":10,"prefix":["abc"],"mindealtier":[5]}}
-DEAL_CONFIG = None
+DEALTIER_CONFIG = None
 
 # Optional parameter to set creative cache url for adpod setup 
 # Defaults to ow.pubmatic.com

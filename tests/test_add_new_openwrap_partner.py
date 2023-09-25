@@ -845,7 +845,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
         "pubmatic":{
             "price":10,
             "prefix":["abc"],
-            "mindealtier":[5]
+            "dealpriority":[5]
         }
       }
 
