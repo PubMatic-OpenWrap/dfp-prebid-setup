@@ -14,6 +14,10 @@ LI_SPONSORSHIP = "SPONSORSHIP"
 
 PREFIX = 'prefix'
 DEALPRIORITY = 'dealpriority'
+DEALIDS = "dealids"
+DEALTIER ='DEALTIER'
+DEALID = 'DEALID'
+
 
 #video specific creative params
 VIDEO_VAST_URL = 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:pwtcid%%'

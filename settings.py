@@ -12,11 +12,11 @@ GOOGLEADS_YAML_FILE = os.path.join(ROOT_DIR, 'googleads.yaml')
 # For ADPOD setup, separate order wil be created for lineitems of each slot. 
 # Each slot will have multiple orders if linitems count per slot exceeds 450(order limit). 
 # Ex:  DFP_ORDER_NAME = 'test_order_name' then order name will s1_1_test_order_name,  s2_1_test_order_name for 1st and 2nd slot of adpod
-DFP_ORDER_NAME = 'test_order_name'
+DFP_ORDER_NAME = 'dealidtest'
 
 # The email of the DFP user who will be the trafficker for
 # the created order
-DFP_USER_EMAIL_ADDRESS = 'testuser@email.com'
+DFP_USER_EMAIL_ADDRESS = 'test.dfp.sandbox@gmail.com'
 
 # The exact name of the DFP advertiser for the created order
 # Set 'PubMatic' for openwrap Line items
@@ -30,7 +30,7 @@ DFP_ADVERTISER_TYPE = "ADVERTISER"
 
 # Lineitem type. Can be either "NETWORK", "HOUSE", "PRICE_PRIORITY" or "SPONSORSHIP"
 # This option is only for openwrap
-DFP_LINEITEM_TYPE= "PRICE_PRIORITY"
+DFP_LINEITEM_TYPE= "SPONSORSHIP"
 
 # Names of placements the line items should target.
 # For Openwrap Leave empty for Run of Network (requires Network permission)
@@ -46,11 +46,7 @@ DFP_PLACEMENT_SIZES = [
   {
     'width': '300',
     'height': '250'
-  },
-  {
-    'width': '728',
-    'height': '90'
-  },
+  }
 ]
 
 # Whether we should create the advertiser in DFP if it does not exist.
@@ -142,7 +138,7 @@ OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 # OpenWrap Creative Type
 #  One of "WEB", "WEB_SAFEFRAME", "AMP", "IN_APP", "IN_APP_VIDEO", "IN_APP_NATIVE", "NATIVE", "VIDEO", "JWPLAYER", "ADPOD"
 #  Defaults to WEB
-#OPENWRAP_SETUP_TYPE = "WEB"
+OPENWRAP_SETUP_TYPE = "ADPOD"
 
 # OpenWrap Use 1x1 Creative
 #  If true, will create creatives with 1x1 and size overrides
@@ -174,7 +170,7 @@ CURRENCY_EXCHANGE = False
 # Use this when OPENWRAP_SETUP_TYPE = "ADPOD"
 # This parameter will be used to set creative level targeting. ex s1_pwtdur = 10
 # Represents the video length parameter on UI.
-VIDEO_LENGTHS = []
+VIDEO_LENGTHS = [5]
 
 #Optional
 #OpenWrap ADPOD_SLOTS
@@ -183,22 +179,37 @@ VIDEO_LENGTHS = []
 # ex ADPOD_SLOTS = [1,2,3], will create 1st, 2nd and 3rd slot of adpod
 # ex ADPOD_SLOTS = [4,5], will create 4th and 5th slot of adpod
 # Slot numbers should be in incremental order.
-ADPOD_SLOTS = []
+ADPOD_SLOTS = [1]
 
 # ENABLE_DEAL_LINEITEM
 # THis option is only for Adpod setup
 # Set ENABLE_DEAL_LINEITEM = True for creating deal line item
 # Defaults to False
-ENABLE_DEAL_LINEITEM = False
+ENABLE_DEAL_LINEITEM = True
 
-# DEAL_CONFIG - configuration for creating deal lineitem
+# DEAL_CONFIG_TYPE identifies the type of DEAL_CONFIG setting.
+# Set to DEALTIER when creating deal lineitem with dealtier targeting
+# Set to DEALID when creating deal lineitem with dealid targeting
+DEAL_CONFIG_TYPE =  None
+
+# DEAL_CONFIG - configuration for creating deal lineitem with dealtier or dealid targeting
 # THis option is only for Adpod setup
-# Provide price, dealtier prefix and mindealtier values
+# Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True 
+#
+# DEALID config:
+# Provide price and dealids for each bidder 
+# Number of LineItem created = len(dealids) for each bidder
+# LineItem will be created with pwtdid(dealid)targeting with pwtdid value as dealids[index] for each bidder
+# Example: DEAL_CONFIG = {"pubmatic":{"price":10,"dealids":["PubDeal1"]}}
+#
+# DEALTIER config:
+# Provide price, dealtier prefix and dealpriority values
 # Number of LineItem created = len(prefix)*len(mindealtier) for each bidder
 # LineItem wil be created with pwtdt(dealtier)targeting with pwtdt value as prefix[index] + mindealtier[index] for each bidder
-# Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True for creating deal lineitem
-# Example: DEAL_CONFIG = {"pubmatic":{"price":10,"prefix":["abc"],"mindealtier":[5]}}
-DEALTIER_CONFIG = None
+# Example: DEAL_CONFIG = {"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}
+DEAL_CONFIG = None
+
+
 
 # Optional parameter to set creative cache url for adpod setup 
 # Defaults to ow.pubmatic.com
