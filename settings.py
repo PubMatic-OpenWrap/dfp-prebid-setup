@@ -48,8 +48,8 @@ DFP_PLACEMENT_SIZES = [
     'height': '250'
   },
   {
-     'width': '728',
-     'height': '90'
+    'width': '728',
+    'height': '90'
   }
 ]
 
