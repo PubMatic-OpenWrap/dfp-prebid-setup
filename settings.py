@@ -195,6 +195,7 @@ DEAL_CONFIG_TYPE =  None
 # DEAL_CONFIG - configuration for creating deal lineitem with dealtier or dealid targeting
 # THis option is only for Adpod setup
 # Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True 
+# DEAL_CONFIG_TYPE =  to DEALID or DEALTIER
 #
 # DEALID config:
 # Provide price and dealids for each bidder 
