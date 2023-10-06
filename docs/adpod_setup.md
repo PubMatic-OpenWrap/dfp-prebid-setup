@@ -19,7 +19,7 @@
 |`OPENWRAP_BUCKET_CSV` | This option is only for creating price based lineitems. Set this to one of the csv file mentioned in ` Inline Header Bidding  csv` table  below. This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item..| string |
 |`ENABLE_DEAL_LINEITEM` | Set this value to `TRUE` for creating deal line items| boolean |
 |`DEAL_CONFIG_TYPE` | Set this value to `DEALID` or `DEALTIER` for creating deal line items with dealtier or dealid targeting| boolean |
-|`DEAL_CONFIG` | Configuration for creating deal lineitem. Set this if `ENABLE_DEAL_LINEITEM` is set to `TRUE`. `DEAL_CONFIG` should have price, array of prefix and array of deal priorities values. Ex: `{"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}`, `DFP_CURRENCY_CODE` will determine the currency with which lineitem is created. | object |
+|`DEAL_CONFIG` | Configuration for creating dealtier or dealid lineitem. Set this if `ENABLE_DEAL_LINEITEM` is set to `TRUE`. `DFP_CURRENCY_CODE` will determine the currency with which lineitem is created. | object |
 
 
 #### More Optional Settings for Adpod Setup
