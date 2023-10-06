@@ -189,7 +189,7 @@ ADPOD_SLOTS = []
 # THis option is only for Adpod setup
 # Set ENABLE_DEAL_LINEITEM = True for creating deal line item
 # Defaults to False
-ENABLE_DEAL_LINEITEM = True
+ENABLE_DEAL_LINEITEM = False
 
 # DEAL_CONFIG_TYPE identifies the type of DEAL_CONFIG setting.
 # Set to DEALTIER when creating deal lineitem with dealtier targeting

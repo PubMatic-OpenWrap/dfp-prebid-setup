@@ -104,15 +104,14 @@ Ex: https://ow.pubmatic.com/cache?uuid=123456789.
 3. Deal config should be similar to what is expected in openwrap bid request and response.
 4. For dealtier lineitems:
    <br> No of lineitems created = len(dealpriority)*len(prefix) * no of bidders
-   <br>Ex: For config `{"appnexus":{"price":20,"prefix":["appx"],"dealpriority":[8,10]},"pubmatic":{"price":10,"prefix":["pubm"],"dealpriority":[5]}}`
+   <br>Ex: For config `{"appnexus":{"price":20,"prefix":["apnx"],"dealpriority":[8,10]},"pubmatic":{"price":10,"prefix":["pubm"],"dealpriority":[5]}}`
    <br><br>No of lineitems for pubmatic:  `1` --> `["pubm5"]` -->  `price:10`
-   <br>No of lineitems for appnexus:  `2`  --> `["pubm8","pubm10"]` --> `price:20`
-   <br><br> Targeting keys(`pwtdt`): `["pubm5", "pubm8", "pubm10"]` 
+   <br>No of lineitems for appnexus:  `2`  --> `["apnx8","apnx10"]` --> `price:20`
+   <br><br> Targeting keys(`pwtdt`): `["pubm5", "apnx8", "apnx10"]` 
 5. For dealid lineitems:
    <br> No of lineitems created = len(dealids) * no of bidders
    <br>Ex: For config `{"appnexus":{"price":20,"dealids":["ApnxDeal1"]},"pubmatic":{"price":10,"dealids":["PubmDeal1"]}}`
    <br><br>No of lineitems for pubmatic:  `1` --> `["PubmDeal1"]` -->  `price:10`
-   <br>No of lineitems for appnexus:  `2`  --> `["ApnxDeal1"]` --> `price:20`
-   <br><br> Targeting keys(`pwtdt`): `["PubmDeal1", "ApnxDeal1"]` 
+   <br>No of lineitems for appnexus:  `1`  --> `["ApnxDeal1"]` --> `price:20`
 
 

@@ -1242,7 +1242,7 @@ def main():
      raise  BadSettingException('DFP_LINEITEM_TYPE should be SPONSORSHIP for creating deal lineitems')
 
   if (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and (deal_config_type is None or (deal_config_type != constant.DEALTIER and deal_config_type != constant.DEALID)):
-     raise  MissingSettingException('DEAL_CONFIG_TYPE should be DEALTIER or DEALID')
+     raise  MissingSettingException('DEAL_CONFIG_TYPE should be {dealtier} or {dealid}'.format(dealtier =constant.DEALTIER, dealid = constant.DEALID))
 
   if (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and deal_config is None:
      raise  MissingSettingException('Set valid DEAL_CONFIG for creating deal lineitems')
