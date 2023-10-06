@@ -169,18 +169,17 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
             'operator': 'IS'
         }
 
-    def set_dealids(self, slot, dealid):
+    def set_dealids(self, slot, deal_id):
         key = '{}_pwtdid'.format(slot)   
         key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
         value_getter = DFPValueIdGetter(key)  
-        value_id = value_getter.get_value_id(dealid)
+        value_id = value_getter.get_value_id(deal_id)
         self.dealids = {
             'xsi_type': 'CustomCriteria',
             'keyId': key_id,
             'valueIds': [value_id],
             'operator': 'IS'
         }
-    
 
     # Set pwtpb custom targeting key
     def set_bid_price(self, slot,price):
@@ -1517,6 +1516,7 @@ def main():
                     creative_user_def_var,
                     deal_config,
                     deal_lineitem_enabled,
+                    None
             )  
     logger.info("""
 

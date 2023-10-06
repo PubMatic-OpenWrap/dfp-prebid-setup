@@ -658,7 +658,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.WEB, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=['Desktop'], device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE',slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled=False)
+                                               roadblock_type= 'ONE_OR_MORE',slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled=False, deal_config_type = None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -720,7 +720,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.VIDEO, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False, deal_config_type = None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -783,7 +783,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.ADPOD, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10], creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10], creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False, deal_config_type = None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -815,7 +815,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
   @patch('dfp.get_advertisers')
   @patch('dfp.get_placements')
   @patch('dfp.get_users')
-  def test_setup_partner_for_adpod_deal_config(self, mock_get_users, mock_get_placements,
+  def test_setup_partner_for_adpod_dealtier_config(self, mock_get_users, mock_get_placements,
     mock_get_advertisers, mock_create_orders, mock_get_unique_id,
     mock_create_line_items, mock_create_creatives, mock_create_creative_sets, mock_licas, mock_dfp_client,
     mock_get_or_create_dfp_targeting_key, mock_dfp_value_id_getter, mock_create_line_item_configs):
@@ -857,7 +857,79 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.ADPOD, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10], creative_user_def_var = None, deal_config=deal_config, deal_lineitem_enabled=True)
+                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10], creative_user_def_var = None, deal_config=deal_config, deal_lineitem_enabled=True, deal_config_type = "DEALTIER")
+
+    mock_get_users.get_user_id_by_email.assert_called_once_with(email)
+    mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
+      placements)
+    mock_get_advertisers.get_advertiser_id_by_name.assert_called_once_with(
+      advertiser, advertiser_type)
+    mock_create_orders.create_order.assert_called_once_with(order, 246810,
+      14523)
+    (mock_create_creatives.create_creative_configs_for_adpod
+      .assert_called_once_with(246810, adpod_creative_size, 'ADPOD_xyz', constant.ADPOD_VIDEO_VAST_URL,adpod_creative_durations,'s1'))
+    mock_create_creatives.create_creatives.assert_called_once()
+    mock_create_creative_sets.create_creative_set_config_adpod.assert_called_once_with([54321,98765], adpod_creative_size, 'ADPOD_xyz' , adpod_creative_durations,'s1')
+    mock_create_creative_sets.create_creative_sets.assert_called_once()
+    mock_create_line_items.create_line_items.assert_called_once()
+    mock_licas.make_licas.assert_called_once_with([543210, 987650], [54321, 98765], durations=[5, 10], setup_type='ADPOD', size_overrides=[], slot='s1')
+
+
+
+  @patch('tasks.add_new_openwrap_partner.create_deal_line_item_configs')
+  @patch('tasks.add_new_openwrap_partner.DFPValueIdGetter')
+  @patch('tasks.add_new_openwrap_partner.get_or_create_dfp_targeting_key')
+  @patch('dfp.associate_line_items_and_creatives')
+  @patch('dfp.create_creative_sets')
+  @patch('dfp.create_creatives')
+  @patch('dfp.create_line_items')
+  @patch('tasks.add_new_openwrap_partner.get_unique_id', return_value = 'ADPOD_xyz')
+  @patch('dfp.create_orders')
+  @patch('dfp.get_advertisers')
+  @patch('dfp.get_placements')
+  @patch('dfp.get_users')
+  def test_setup_partner_for_adpod_dealid_config(self, mock_get_users, mock_get_placements,
+    mock_get_advertisers, mock_create_orders, mock_get_unique_id,
+    mock_create_line_items, mock_create_creatives, mock_create_creative_sets, mock_licas, mock_dfp_client,
+    mock_get_or_create_dfp_targeting_key, mock_dfp_value_id_getter, mock_create_line_item_configs):
+    """
+    It calls all expected DFP functions.
+    """
+
+    mock_get_users.get_user_id_by_email = MagicMock(return_value=14523)
+    mock_get_placements.get_placement_ids_by_name = MagicMock(
+      return_value=[1234567, 9876543])
+    mock_get_advertisers.get_advertiser_id_by_name = MagicMock(
+      return_value=246810)
+    mock_create_orders.create_order = MagicMock(return_value=1357913)
+    mock_create_creatives.create_creatives = MagicMock(return_value = [54321,98765])
+    mock_create_creative_sets.create_creative_sets = MagicMock(return_value = [54321,98765])
+    mock_create_line_items.create_line_items = MagicMock(
+      return_value =[543210, 987650])
+
+    prices = [{
+       'start': 5,
+       'end': 10,
+       'granularity': 5,
+       'rate': 5
+    }]
+
+    deal_config = {
+        "pubmatic":{
+            "price":10,
+            "dealids":["deal1"],
+        }
+      }
+
+
+    tasks.add_new_openwrap_partner.setup_partner(user_email=email, advertiser_name=advertiser, 
+                                               advertiser_type = advertiser_type, order_name=order,
+                                               placements=placements, sizes=adpod_creative_size, lineitem_type = lineitem_type,
+                                               lineitem_prefix = 'LI_123', bidder_code=bidder_code, prices=prices,
+                                               setup_type = constant.ADPOD, creative_template = None, num_creatives=2,
+                                               use_1x1=False, currency_code='USD', custom_targeting= None,
+                                               same_adv_exception= False, device_categories=None, device_capabilities=None, 
+                                               roadblock_type= 'ONE_OR_MORE',  slot = 's1',adpod_creative_durations=[5,10], creative_user_def_var = None, deal_config=deal_config, deal_lineitem_enabled=True, deal_config_type = "DEALID")
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -919,7 +991,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.IN_APP, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=[], 
-                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False, deal_config_type = None)
 
     (mock_create_creatives.create_duplicate_creative_configs
       .assert_called_once_with(bidder_code[0], order, 246810,  sizes, 2, creative_file='creative_snippet_openwrap_in_app.html', prefix='INAPP_xyz', safe_frame=False))
@@ -974,7 +1046,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.IN_APP_VIDEO, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=[], 
-                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False, deal_config_type = None)
 
     mock_get_users.get_user_id_by_email.assert_called_once_with(email)
     mock_get_placements.get_placement_ids_by_name.assert_called_once_with(
@@ -1037,7 +1109,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.IN_APP_NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = 'pubmatic-ow-signal:%%PATTERN:pwtsid%%', deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = 'pubmatic-ow-signal:%%PATTERN:pwtsid%%', deal_config=None, deal_lineitem_enabled= False,  deal_config_type = None)
 
     mock_get_creative_template.get_creative_template_ids_by_name.assert_called_once()
     mock_create_creatives.create_creative_configs_for_native.assert_called_once_with(246810,  [123, 456], 2, 'IN_APP_NATIVE_xyz', 'pubmatic-ow-signal:%%PATTERN:pwtsid%%')
@@ -1091,7 +1163,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False, deal_config_type = None)
 
     mock_get_creative_template.get_creative_template_ids_by_name.assert_called_once()
     mock_create_creatives.create_creative_configs_for_native.assert_called_once_with(246810,  [123, 456], 2, 'NATIVE_xyz', None)
@@ -1137,7 +1209,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
                                                setup_type = constant.NATIVE, creative_template = None, num_creatives=2,
                                                use_1x1=False, currency_code='USD', custom_targeting= None,
                                                same_adv_exception= False, device_categories=None, device_capabilities=None, 
-                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False)
+                                               roadblock_type= 'ONE_OR_MORE', slot = None,adpod_creative_durations=None, creative_user_def_var = None, deal_config=None, deal_lineitem_enabled= False,  deal_config_type = None)
     
     mock_get_root_ad_unit_id.get_root_ad_unit_id.assert_called_once()
     #args, kwargs = mock_create_line_item_configs.call_args
