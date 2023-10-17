@@ -18,7 +18,8 @@
 |`PREBID_BIDDER_CODE` | Bidder codes to target bidders with one line item. <br>Ex `PREBID_BIDDER_CODE = ['pubmatic']`. This parameter is mandatory for bidder level reporting. Set to `None` to generate line items for all partners.   | string array|
 |`OPENWRAP_BUCKET_CSV` | This option is only for creating price based lineitems. Set this to one of the csv file mentioned in ` Inline Header Bidding  csv` table  below. This CSV lists buckets and price granularity; it sets `pwtpb` targeting for each line item..| string |
 |`ENABLE_DEAL_LINEITEM` | Set this value to `TRUE` for creating deal line items| boolean |
-|`DEALTIER_CONFIG` | Configuration for creating deal lineitem. Set this if `ENABLE_DEAL_LINEITEM` is set to `TRUE`. `DEALTIER_CONFIG` should have price, array of prefix and array of deal priorities values. Ex: `{"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}`, `DFP_CURRENCY_CODE` will determine the currency with which lineitem is created. | object |
+|`DEAL_CONFIG_TYPE` | Set this value to `DEALID` or `DEALTIER` for creating deal line items with dealtier or dealid targeting| boolean |
+|`DEAL_CONFIG` | Configuration for creating dealtier or dealid lineitem. Set this if `ENABLE_DEAL_LINEITEM` is set to `TRUE`. `DFP_CURRENCY_CODE` will determine the currency with which lineitem is created. | object |
 
 
 #### More Optional Settings for Adpod Setup
@@ -83,26 +84,34 @@ Ex: https://ow.pubmatic.com/cache?uuid=123456789.
 
 ## Deal LineItem Setup:
 1. Set `ENABLE_DEAL_LINEITEM` to `TRUE`
-2. Set `DEALTIER_CONFIG` with correct dealtier config. Ex: `{"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}`
-3. Set `DFP_LINEITEM_TYPE` to `SPONSORSHIP`
-4. Set `OPENWRAP_SETUP_TYPE` to 'ADPOD'
-5. Set `ADPOD_SLOTS` to required correct adpod slot position. Ex: [1,2,3] for 1st, 2nd and 3rd position.
-6. Set `VIDEO_LENGTHS` to required creative durations.
-7. Set `DFP_PLACEMENT_SIZES` to required creative size.
-8. Set `PREBID_BIDDER_CODE` with required biddercodes. This parameter is optional, use only for creating lineitem with bidder targeting.
-9. Set `DFP_ORDER_NAME` to order name. Lineitem of all the slots will be part of a single order.
-10. Set `DFP_USER_EMAIL_ADDRESS`, `DFP_ADVERTISER_NAME`, `DFP_ADVERTISER_TYPE` settings
-11. Set all other optional setting as required.
+2. Set `DEAL_CONFIG` with correct dealtier or dealid config. 
+   Ex: DealTier Config: `{"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}`
+   Ex: DealId Config: `{"pubmatic":{"price":10,"dealids":["PubDeal1]}}`
+3. Set `DEAL_CONFIG_TYPE` to `DEALID` or `DEALTIER`
+4. Set `DFP_LINEITEM_TYPE` to `SPONSORSHIP`
+5. Set `OPENWRAP_SETUP_TYPE` to 'ADPOD'
+6. Set `ADPOD_SLOTS` to required correct adpod slot position. Ex: [1,2,3] for 1st, 2nd and 3rd position.
+7. Set `VIDEO_LENGTHS` to required creative durations.
+8. Set `DFP_PLACEMENT_SIZES` to required creative size.
+9. Set `PREBID_BIDDER_CODE` with required biddercodes. This parameter is optional, use only for creating lineitem with bidder targeting.
+10. Set `DFP_ORDER_NAME` to order name. Lineitem of all the slots will be part of a single order.
+11. Set `DFP_USER_EMAIL_ADDRESS`, `DFP_ADVERTISER_NAME`, `DFP_ADVERTISER_TYPE` settings
+12. Set all other optional setting as required.
 
 #### Notes (Deal LineItem Setup):
 1. Single order will have lineitems for all the slots.
-2. Line items will be created with `pwtdt` targeting. Optional `pwtpid` (bidder targeting) is added if bidder codes are set.
-3. Dealtier config should be similar to what is expected in openwrap bid request and response.
+2. Line items will be created with `pwtdt` targeting for dealtier lineitems and `pwtdid` targeting for dealid lineitems . Optional `pwtpid` (bidder targeting) is added if bidder codes are set.
+3. Deal config should be similar to what is expected in openwrap bid request and response.
 4. For dealtier lineitems:
    <br> No of lineitems created = len(dealpriority)*len(prefix) * no of bidders
-   <br>Ex: For config `{"appnexus":{"price":20,"prefix":["appx"],"dealpriority":[8,10]},"pubmatic":{"price":10,"prefix":["pubm"],"dealpriority":[5]}}`
+   <br>Ex: For config `{"appnexus":{"price":20,"prefix":["apnx"],"dealpriority":[8,10]},"pubmatic":{"price":10,"prefix":["pubm"],"dealpriority":[5]}}`
    <br><br>No of lineitems for pubmatic:  `1` --> `["pubm5"]` -->  `price:10`
-   <br>No of lineitems for appnexus:  `2`  --> `["pubm8","pubm10"]` --> `price:20`
-   <br><br> Targeting keys(`pwtdt`): `["pubm5", "pubm8", "pubm10"]` 
-                
+   <br>No of lineitems for appnexus:  `2`  --> `["apnx8","apnx10"]` --> `price:20`
+   <br><br> Targeting keys(`pwtdt`): `["pubm5", "apnx8", "apnx10"]` 
+5. For dealid lineitems:
+   <br> No of lineitems created = len(dealids) * no of bidders
+   <br>Ex: For config `{"appnexus":{"price":20,"dealids":["ApnxDeal1"]},"pubmatic":{"price":10,"dealids":["PubmDeal1"]}}`
+   <br><br>No of lineitems for pubmatic:  `1` --> `["PubmDeal1"]` -->  `price:10`
+   <br>No of lineitems for appnexus:  `1`  --> `["ApnxDeal1"]` --> `price:20`
+
 

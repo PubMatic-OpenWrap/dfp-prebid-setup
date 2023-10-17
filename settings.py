@@ -50,7 +50,7 @@ DFP_PLACEMENT_SIZES = [
   {
     'width': '728',
     'height': '90'
-  },
+  }
 ]
 
 # Whether we should create the advertiser in DFP if it does not exist.
@@ -191,14 +191,30 @@ ADPOD_SLOTS = []
 # Defaults to False
 ENABLE_DEAL_LINEITEM = False
 
-# DEAL_CONFIG - configuration for creating deal lineitem
+# DEAL_CONFIG_TYPE identifies the type of DEAL_CONFIG setting.
+# Set to DEALTIER when creating deal lineitem with dealtier targeting
+# Set to DEALID when creating deal lineitem with dealid targeting
+DEAL_CONFIG_TYPE =  None
+
+# DEAL_CONFIG - configuration for creating deal lineitem with dealtier or dealid targeting
 # THis option is only for Adpod setup
-# Provide price, dealtier prefix and mindealtier values
+# Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True 
+# DEAL_CONFIG_TYPE =  to DEALID or DEALTIER
+#
+# DEALID config:
+# Provide price and dealids for each bidder 
+# Number of LineItem created = len(dealids) for each bidder
+# LineItem will be created with pwtdid(dealid)targeting with pwtdid value as dealids[index] for each bidder
+# Example: DEAL_CONFIG = {"pubmatic":{"price":10,"dealids":["PubDeal1"]}}
+#
+# DEALTIER config:
+# Provide price, dealtier prefix and dealpriority values
 # Number of LineItem created = len(prefix)*len(mindealtier) for each bidder
 # LineItem wil be created with pwtdt(dealtier)targeting with pwtdt value as prefix[index] + mindealtier[index] for each bidder
-# Set DFP_LINEITEM_TYPE = "SPONSORSHIP" and ENABLE_DEAL_LINEITEM = True for creating deal lineitem
-# Example: DEAL_CONFIG = {"pubmatic":{"price":10,"prefix":["abc"],"mindealtier":[5]}}
-DEALTIER_CONFIG = None
+# Example: DEAL_CONFIG = {"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}
+DEAL_CONFIG = None
+
+
 
 # Optional parameter to set creative cache url for adpod setup 
 # Defaults to ow.pubmatic.com

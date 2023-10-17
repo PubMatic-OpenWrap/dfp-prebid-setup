@@ -117,6 +117,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.creativeTargeting = None
         self.pwtbst_value_id = None
         self.deal_tier = None
+        self.dealids = None
     def init_keys(self):  
         # Get DFP key IDs for line item targeting.
         self.pwtpid_key_id = get_or_create_dfp_targeting_key('pwtpid', key_type='PREDEFINED')  # bidder
@@ -162,6 +163,18 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         value_getter = DFPValueIdGetter(key)  
         value_id = value_getter.get_value_id(deal_tier)
         self.deal_tier = {
+            'xsi_type': 'CustomCriteria',
+            'keyId': key_id,
+            'valueIds': [value_id],
+            'operator': 'IS'
+        }
+
+    def set_dealids(self, slot, deal_id):
+        key = '{}_pwtdid'.format(slot)   
+        key_id = get_or_create_dfp_targeting_key(key, key_type='FREEFORM')
+        value_getter = DFPValueIdGetter(key)  
+        value_id = value_getter.get_value_id(deal_id)
+        self.dealids = {
             'xsi_type': 'CustomCriteria',
             'keyId': key_id,
             'valueIds': [value_id],
@@ -335,8 +348,14 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         if self.price_set:
             top_set['children'].append(self.price_set)
 
+        #pwtdt
         if  self.deal_tier:
             top_set['children'].append(self.deal_tier)
+        
+        #pwtdid
+        if  self.dealids:
+            top_set['children'].append(self.dealids)
+
         # dont set other targetting for JW Player
         if self.setup_type is not constant.JW_PLAYER:
 
@@ -489,7 +508,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
      sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
-     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var, deal_config, deal_lineitem_enabled):
+     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var, deal_config, deal_lineitem_enabled, deal_config_type):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
@@ -621,7 +640,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
   if setup_type == constant.ADPOD and deal_lineitem_enabled == True:
       line_items_config = create_deal_line_item_configs(deal_config, order_id,
       placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
-      currency_code, custom_targeting, setup_type, ad_unit_ids=ad_unit_ids, same_adv_exception=same_adv_exception,
+      currency_code, custom_targeting, setup_type, deal_config_type, ad_unit_ids=ad_unit_ids, same_adv_exception=same_adv_exception,
       device_category_ids=None, device_capability_ids=None, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
        
   else:    
@@ -647,16 +666,22 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
     
 
 def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type,  lineitem_prefix,
-        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type):
+        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type, deal_config_type):
+    
+    targeting=[] 
+    li_count = 0  
+    if deal_config_type == constant.DEALTIER:
+        for bidder, cfg in deal_config.items():
+          li_count = li_count + len(cfg[constant.PREFIX]) * len(cfg[constant.DEALPRIORITY])
+          for prefix in cfg[constant.PREFIX]:
+            for mdt in cfg[constant.DEALPRIORITY]:
+                targeting.append(prefix + str(mdt))  
 
-    dealtiers=[]
-    li_count = 0
-    for bidder, cfg in deal_config.items():
-      li_count = li_count + len(cfg[constant.PREFIX]) * len(cfg[constant.DEALPRIORITY])
-      for prefix in cfg[constant.PREFIX]:
-        for mdt in cfg[constant.DEALPRIORITY]:
-            dealtiers.append(prefix + str(mdt))  
-
+    if deal_config_type == constant.DEALID: 
+        for bidder, cfg in deal_config.items():
+          li_count = li_count + len(cfg[constant.DEALIDS])
+          for dealid in cfg[constant.DEALIDS]:
+                targeting.append(dealid)  
     logger.info(
       u"""
       ADPOD Details :
@@ -675,10 +700,11 @@ def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_c
       {name_start_format}Total number of Line Items{format_end}: {value_start_format}{lineitem_total}{format_end}
       {name_start_format}Total number of Creatives{format_end}: {value_start_format}{creatives_total}{format_end}      
       {name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}      
+      {name_start_format}Deal Config Type{format_end}: {value_start_format}{deal_config_type}{format_end}            
       {name_start_format}Deal Config{format_end}: {value_start_format}{deal_config}{format_end}            
       
       Line items will have targeting:
-      {name_start_format}Dealtiers{format_end} = {value_start_format}{dealtiers}{format_end}
+      {name_start_format}Targeting{format_end} = {value_start_format}{targeting}{format_end}
       {name_start_format}Bidders{format_end} = {value_start_format}{bidder_code}{format_end}
       {name_start_format}Placements{format_end} = {value_start_format}{placements}{format_end}
       {name_start_format}Custom targeting{format_end} = {value_start_format}{custom_targeting}{format_end}
@@ -701,7 +727,8 @@ def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_c
         creatives_per_slot= len(adpod_creative_durations),
         creatives_total= adpod_size * len(adpod_creative_durations),
         deal_config = deal_config,
-        dealtiers = dealtiers,
+        deal_config_type = deal_config_type,
+        targeting = targeting,
         bidder_code = bidder_code,
         placements=placements_print,
         sizes=sizes,
@@ -728,7 +755,7 @@ def get_creative_file(setup_type):
     return creative_file
 
 def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_code, sizes, key_gen_obj,
-  lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, ad_unit_ids=None, same_adv_exception=False, 
+  lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, deal_config_type, ad_unit_ids=None, same_adv_exception=False, 
   device_category_ids=None,device_capability_ids=None, roadblock_type='ONE_OR_MORE', durations = None, slot = None):
   """
   Create a line item config for each dealtier.
@@ -778,14 +805,11 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
             key_gen_obj.set_bidder_value(bidder_code, slot)
         else:
             key_gen_obj.set_bidder_value(None, slot)
- 
-    for prefix in cfg[constant.PREFIX]:
-        for dp in cfg[constant.DEALPRIORITY]:
-            dealtier = prefix + str(dp)
-            key_gen_obj.set_deal_tier(slot, dealtier)
-            # Autogenerate the line item name. (prefix_rate)
-            line_item_name = '{}_{}_{}_{}'.format(slot, lineitem_prefix, bidder, dealtier)
 
+    if deal_config_type == constant.DEALID:
+        for dealid in cfg[constant.DEALIDS]:
+            key_gen_obj.set_dealids(slot, dealid)
+            line_item_name = '{}_{}_{}_{}'.format(slot, lineitem_prefix, bidder, dealid)
             config = dfp.create_line_items.create_line_item_config(
               name=line_item_name,
               order_id=order_id,
@@ -805,8 +829,37 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
               durations=durations,
               slot=slot
             )
-
             line_items_config.append(config)
+
+
+    if deal_config_type == constant.DEALTIER: 
+        for prefix in cfg[constant.PREFIX]:
+            for dp in cfg[constant.DEALPRIORITY]:
+                dealtier = prefix + str(dp)
+                key_gen_obj.set_deal_tier(slot, dealtier)
+                line_item_name = '{}_{}_{}_{}'.format(slot, lineitem_prefix, bidder, dealtier)
+
+                config = dfp.create_line_items.create_line_item_config(
+                  name=line_item_name,
+                  order_id=order_id,
+                  placement_ids=placement_ids,
+                  cpm_micro_amount=num_to_micro_amount(round(cfg['price'],2)),
+                  sizes=sizes,
+                  key_gen_obj=key_gen_obj,
+                  lineitem_type=lineitem_type,
+                  currency_code=currency_code,
+                  setup_type=setup_type,
+                  creative_template_ids=None,
+                  ad_unit_ids=ad_unit_ids,
+                  same_adv_exception=same_adv_exception,
+                  device_categories=device_category_ids,
+                  device_capabilities=device_capability_ids,
+                  roadblock_type=roadblock_type,
+                  durations=durations,
+                  slot=slot
+                )
+
+                line_items_config.append(config)
 
   return line_items_config
 
@@ -1171,9 +1224,11 @@ def main():
   
   deal_config = None
   deal_lineitem_enabled = False
+  deal_config_type = None
   if setup_type == constant.ADPOD:
     deal_lineitem_enabled = getattr(settings, 'ENABLE_DEAL_LINEITEM', False)
-    deal_config = getattr(settings, 'DEALTIER_CONFIG', None)
+    deal_config_type = getattr(settings, 'DEAL_CONFIG_TYPE', None)
+    deal_config = getattr(settings, 'DEAL_CONFIG', None)
     adpod_creative_cache_url = getattr(settings, 'ADPOD_CREATIVE_CACHE_URL', constant.DEFAULT_APDOD_CACHE_URL)  
     constant.ADPOD_VIDEO_VAST_URL =  constant.ADPOD_VIDEO_VAST_URL.replace("{url}",adpod_creative_cache_url)
   
@@ -1185,7 +1240,10 @@ def main():
 
   if  (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and lineitem_type != constant.LI_SPONSORSHIP:
      raise  BadSettingException('DFP_LINEITEM_TYPE should be SPONSORSHIP for creating deal lineitems')
- 
+
+  if (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and (deal_config_type is None or (deal_config_type != constant.DEALTIER and deal_config_type != constant.DEALID)):
+     raise  MissingSettingException('DEAL_CONFIG_TYPE should be {dealtier} or {dealid}'.format(dealtier =constant.DEALTIER, dealid = constant.DEALID))
+
   if (setup_type == constant.ADPOD and deal_lineitem_enabled == True) and deal_config is None:
      raise  MissingSettingException('Set valid DEAL_CONFIG for creating deal lineitems')
  
@@ -1386,7 +1444,7 @@ def main():
   else:
     # Prininting adpod deal lineitem summary
     print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type,  lineitem_prefix,
-        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type) 
+        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type, deal_config_type) 
         
   ok = input('Is this correct? (y/n)\n')
 
@@ -1424,6 +1482,7 @@ def main():
                     None,
                     deal_config,
                     deal_lineitem_enabled,
+                    deal_config_type
             )
 
             if deal_lineitem_enabled == False:
@@ -1457,6 +1516,7 @@ def main():
                     creative_user_def_var,
                     deal_config,
                     deal_lineitem_enabled,
+                    None
             )  
     logger.info("""
 
