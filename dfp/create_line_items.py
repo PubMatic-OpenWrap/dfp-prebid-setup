@@ -1,4 +1,5 @@
 import logging
+import constant
 from googleads import ad_manager
 
 from dfp.client import get_client
@@ -172,7 +173,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
       line_item_config['videoMaxDuration'] = 15000
       line_item_config['targeting']['requestPlatformTargeting'] = {'targetedRequestPlatforms': ['MOBILE_APP','VIDEO_PLAYER']}
 
-  if setup_type in ('VIDEO', 'ADPOD'):
+  if setup_type in (constant.VIDEO, constant.ADPOD):
       if video_position_type is not None:
         line_item_config['targeting']['videoPositionTargeting'] = {"targetedPositions":[{"videoPosition":{"positionType": video_position_type}}]}
   return line_item_config
