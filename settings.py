@@ -214,7 +214,11 @@ DEAL_CONFIG_TYPE =  None
 # Example: DEAL_CONFIG = {"pubmatic":{"price":10,"prefix":["abc"],"dealpriority":[5]}}
 DEAL_CONFIG = None
 
-
+# VIDEO_POSITION_TYPE - video position to target
+# Valid values -  "PREROLL", "MIDROLL", "POSTROLL", "ALL"
+# This is a optional setting and is applicable for video and adpod setup
+# For adpod setup each slot lineitem will have same video position targeting
+VIDEO_POSITION_TYPE = None
 
 # Optional parameter to set creative cache url for adpod setup 
 # Defaults to ow.pubmatic.com

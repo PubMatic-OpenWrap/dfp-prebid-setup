@@ -132,6 +132,7 @@ If successful, it returns all the orders in your GAM account.
 |`CURRENCY_EXCHANGE`|Same as **Currency Module** in the previous Line Item Tool. When used, this option converts the _rate_ calculated from CSV to the network's currency setting. This is applicable for `WEB`, `WEB_SAFEFRAME` and `NATIVE` only. |bool|True|
 |`OPENWRAP_USE_1x1_CREATIVE`| When this option is set, the tool creates a single creative with size 1x1 and all lineitems with size overrides. |bool|False|
 |`OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR`| When this option is set, the tool creates a string variable for NATIVE creative type. |string|None|
+|`VIDVIDEO_POSITION_TYPE`| determines which video position lineitem will target. Valid values -  `PREROLL`, `MIDROLL`, `POSTROLL`, `ALL`.This is a optional setting and is applicable for video and adpod setup. For adpod setup each slot lineitem will have same video position targeting |string|None|
 
 ## Create Line Items for Prebid
 

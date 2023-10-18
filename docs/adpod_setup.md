@@ -32,8 +32,8 @@
 |`DFP_SAME_ADV_EXCEPTION`|Determines whether to set the "Same Advertiser Exception" on line items. |bool|`False`|
 |`DFP_DEVICE_CATEGORIES`|Sets device category targetting for a Line item. Valid values: `Connected TV`, `Desktop`, `Feature Phone`, `Set Top Box`, `Smartphone`, and `Tablet`.|string or array of strings|None|
 |`DFP_ROADBLOCK_TYPE`| Roadblock Type. Set to  `ONE_OR_MORE` or `AS_MANY_AS_POSSIBLE`.|string|None|
-|`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. <br>  Ex:  `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]` |array of arrays .)|None|
-
+|`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. <br>  Ex:  `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]` |array of arrays|None|
+|`VIDVIDEO_POSITION_TYPE`| determines which video position lineitem will target. Valid values -  `PREROLL`, `MIDROLL`, `POSTROLL`, `ALL`.This is a optional setting and is applicable for video and adpod setup. For adpod setup each slot lineitem will have same video position targeting |string|None|
 
 
 #### Inline Header Bidding csv 
