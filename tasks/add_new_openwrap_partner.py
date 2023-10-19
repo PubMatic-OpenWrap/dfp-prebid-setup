@@ -1322,10 +1322,12 @@ def main():
   use_1x1 = getattr(settings, 'OPENWRAP_USE_1x1_CREATIVE', False)
   if not isinstance(use_1x1, bool):
       raise BadSettingException('OPENWRAP_USE_1x1_CREATIVE')
-
-  video_position_type =  getattr(settings, 'VIDEO_POSITION_TYPE', None) 
-  if video_position_type is not None and setup_type in (constant.ADPOD, constant.VIDEO) and video_position_type not in (constant.PREROLL, constant.MIDROLL, constant.POSTROLL, constant.ALL) :
-     raise  BadSettingException('VIDEO_POSITION_TYPE should have one of these values: {preroll}, {midroll}, {postroll} or {all}'.format(preroll =constant.PREROLL, midroll = constant.MIDROLL, postroll = constant.POSTROLL, all = constant.ALL))
+  
+  video_position_type = None
+  if setup_type in (constant.ADPOD, constant.VIDEO):
+      video_position_type =  getattr(settings, 'VIDEO_POSITION_TYPE', None) 
+      if video_position_type is not None and video_position_type not in (constant.PREROLL, constant.MIDROLL, constant.POSTROLL, constant.ALL) :
+        raise  BadSettingException('VIDEO_POSITION_TYPE should have one of these values: {preroll}, {midroll}, {postroll} or {all}'.format(preroll =constant.PREROLL, midroll = constant.MIDROLL, postroll = constant.POSTROLL, all = constant.ALL))
 
   custom_targeting = getattr(settings, 'OPENWRAP_CUSTOM_TARGETING', None)
   if custom_targeting != None:
