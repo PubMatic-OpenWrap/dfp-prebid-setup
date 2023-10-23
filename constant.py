@@ -22,7 +22,6 @@ DEALID = 'DEALID'
 PREROLL = "PREROLL"
 MIDROLL = "MIDROLL"
 POSTROLL = "POSTROLL"
-ALL = "ALL"
 
 #video specific creative params
 VIDEO_VAST_URL = 'https://ow.pubmatic.com/cache?uuid=%%PATTERN:pwtcid%%'

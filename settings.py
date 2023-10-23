@@ -215,7 +215,7 @@ DEAL_CONFIG_TYPE =  None
 DEAL_CONFIG = None
 
 # VIDEO_POSITION_TYPE - video position to target
-# Valid values -  "PREROLL", "MIDROLL", "POSTROLL", "ALL"
+# Valid values -  "PREROLL", "MIDROLL", "POSTROLL"
 # This is a optional setting and is applicable for video and adpod setup
 # For adpod setup each slot lineitem will have same video position targeting
 VIDEO_POSITION_TYPE = None
