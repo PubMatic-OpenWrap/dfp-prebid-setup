@@ -508,7 +508,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
 
 def setup_partner(user_email, advertiser_name, advertiser_type, order_name, placements,
      sizes, lineitem_type, lineitem_prefix, bidder_code, prices, setup_type, creative_template, num_creatives, use_1x1,
-     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var, deal_config, deal_lineitem_enabled, deal_config_type):
+     currency_code, custom_targeting, same_adv_exception, device_categories, device_capabilities, roadblock_type, slot , adpod_creative_durations, creative_user_def_var, deal_config, deal_lineitem_enabled, deal_config_type, video_position_type):
   """
   Call all necessary DFP tasks for a new Prebid partner setup.
   """
@@ -641,13 +641,13 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
       line_items_config = create_deal_line_item_configs(deal_config, order_id,
       placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
       currency_code, custom_targeting, setup_type, deal_config_type, ad_unit_ids=ad_unit_ids, same_adv_exception=same_adv_exception,
-      device_category_ids=None, device_capability_ids=None, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
+      device_category_ids=None, device_capability_ids=None, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot, video_position_type=video_position_type)
        
   else:    
       line_items_config = create_line_item_configs(prices, order_id,
       placement_ids, bidder_code, sizes, OpenWrapTargetingKeyGen(), lineitem_type, lineitem_prefix,
       currency_code, custom_targeting, setup_type, creative_template_ids, same_adv_exception=same_adv_exception,ad_unit_ids=ad_unit_ids,
-      device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot)
+      device_category_ids=device_category_ids, device_capability_ids=device_capability_ids, roadblock_type=roadblock_type,durations=adpod_creative_durations,slot=slot, video_position_type = video_position_type)
   
   line_item_ids = dfp.create_line_items.create_line_items(line_items_config)
 
@@ -666,7 +666,7 @@ def setup_partner(user_email, advertiser_name, advertiser_type, order_name, plac
     
 
 def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type,  lineitem_prefix,
-        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type, deal_config_type):
+        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type, deal_config_type, video_position_type):
     
     targeting=[] 
     li_count = 0  
@@ -704,6 +704,7 @@ def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_c
       {name_start_format}Deal Config{format_end}: {value_start_format}{deal_config}{format_end}            
       
       Line items will have targeting:
+      {name_start_format}Video Position Type{format_end} = {value_start_format}{video_position_type}{format_end}
       {name_start_format}Targeting{format_end} = {value_start_format}{targeting}{format_end}
       {name_start_format}Bidders{format_end} = {value_start_format}{bidder_code}{format_end}
       {name_start_format}Placements{format_end} = {value_start_format}{placements}{format_end}
@@ -728,6 +729,7 @@ def print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_c
         creatives_total= adpod_size * len(adpod_creative_durations),
         deal_config = deal_config,
         deal_config_type = deal_config_type,
+        video_position_type = video_position_type,
         targeting = targeting,
         bidder_code = bidder_code,
         placements=placements_print,
@@ -756,7 +758,7 @@ def get_creative_file(setup_type):
 
 def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_code, sizes, key_gen_obj,
   lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, deal_config_type, ad_unit_ids=None, same_adv_exception=False, 
-  device_category_ids=None,device_capability_ids=None, roadblock_type='ONE_OR_MORE', durations = None, slot = None):
+  device_category_ids=None,device_capability_ids=None, roadblock_type='ONE_OR_MORE', durations = None, slot = None,  video_position_type = None):
   """
   Create a line item config for each dealtier.
 
@@ -827,7 +829,8 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
               device_capabilities=device_capability_ids,
               roadblock_type=roadblock_type,
               durations=durations,
-              slot=slot
+              slot=slot,
+              video_position_type=video_position_type   
             )
             line_items_config.append(config)
 
@@ -856,7 +859,8 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
                   device_capabilities=device_capability_ids,
                   roadblock_type=roadblock_type,
                   durations=durations,
-                  slot=slot
+                  slot=slot,
+                  video_position_type=video_position_type
                 )
 
                 line_items_config.append(config)
@@ -867,7 +871,7 @@ def create_deal_line_item_configs(deal_config, order_id, placement_ids, bidder_c
 def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes, key_gen_obj,
   lineitem_type, lineitem_prefix, currency_code, custom_targeting, setup_type, creative_template_ids,
   ad_unit_ids=None, same_adv_exception=False, device_category_ids=None,device_capability_ids=None,
-  roadblock_type='ONE_OR_MORE', durations = None, slot = None):
+  roadblock_type='ONE_OR_MORE', durations = None, slot = None, video_position_type = None):
   """
   Create a line item config for each price bucket.
 
@@ -967,7 +971,8 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
       device_capabilities=device_capability_ids,
       roadblock_type=roadblock_type,
       durations=durations,
-      slot=slot
+      slot=slot,
+      video_position_type=video_position_type
     )
 
     line_items_config.append(config)
@@ -1317,6 +1322,12 @@ def main():
   use_1x1 = getattr(settings, 'OPENWRAP_USE_1x1_CREATIVE', False)
   if not isinstance(use_1x1, bool):
       raise BadSettingException('OPENWRAP_USE_1x1_CREATIVE')
+  
+  video_position_type = None
+  if setup_type in (constant.ADPOD, constant.VIDEO):
+      video_position_type =  getattr(settings, 'VIDEO_POSITION_TYPE', None) 
+      if video_position_type is not None and video_position_type not in (constant.PREROLL, constant.MIDROLL, constant.POSTROLL) :
+        raise  BadSettingException('VIDEO_POSITION_TYPE should have one of these values: {preroll}, {midroll}, {postroll} or {all}'.format(preroll =constant.PREROLL, midroll = constant.MIDROLL, postroll = constant.POSTROLL, all = constant.ALL))
 
   custom_targeting = getattr(settings, 'OPENWRAP_CUSTOM_TARGETING', None)
   if custom_targeting != None:
@@ -1395,6 +1406,7 @@ def main():
         {name_start_format}device categories{format_end} = {value_start_format}{device_categories}{format_end}
         {name_start_format}device capabilities{format_end} = {value_start_format}{device_capabilities}{format_end}
         {name_start_format}roadblock type{format_end} = {value_start_format}{roadblock_type}{format_end}
+        {name_start_format}video position type{format_end} = {value_start_format}{video_position_type}{format_end}
         """.format(
         num_line_items = len(prices),
         order_name=order_name,
@@ -1417,6 +1429,7 @@ def main():
         name_start_format=color.BOLD,
         format_end=color.END,
         value_start_format=color.BLUE,
+        video_position_type  = video_position_type
         ))
 
     if setup_type == constant.ADPOD:
@@ -1444,7 +1457,7 @@ def main():
   else:
     # Prininting adpod deal lineitem summary
     print_summary(order_name,advertiser_name,advertiser_type,adpod_size, adpod_creative_durations, deal_config, adpod_slots, lineitem_type,  lineitem_prefix,
-        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type, deal_config_type) 
+        setup_type, user_email, placements_print, sizes, custom_targeting, same_adv_exception, bidder_code, roadblock_type, deal_config_type, video_position_type) 
         
   ok = input('Is this correct? (y/n)\n')
 
@@ -1482,7 +1495,8 @@ def main():
                     None,
                     deal_config,
                     deal_lineitem_enabled,
-                    deal_config_type
+                    deal_config_type,
+                    video_position_type
             )
 
             if deal_lineitem_enabled == False:
@@ -1516,7 +1530,8 @@ def main():
                     creative_user_def_var,
                     deal_config,
                     deal_lineitem_enabled,
-                    None
+                    None,
+                    video_position_type
             )  
     logger.info("""
 
