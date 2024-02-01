@@ -84,7 +84,7 @@ If successful, it returns all the orders in your GAM account.
 
 
 ## ADPOD Line Items Setup
-   ***[Refer this link for Adpod setup](docs/adpod_setup.md)*** 
+   ***[Refer this link for Adpod setup](docs/adpod_setup.md)***
 
 ## Create Line Items for OpenWrap
 
@@ -167,6 +167,9 @@ In most cases, you won't need to change these settings.
 |`DFP_CURRENCY_CODE`|National currency to use in line items.|string|`'USD'`|
 |`DFP_LINE_ITEM_FORMAT`|The format for the line item names.|string|`u'{bidder_code}: HB ${price}'`|
 
+## [update line item setup][update]
+***[Refer this link to update line item setup](docs/update.md)***
+
 ## Limitations
 
-*   Line Item Tool does not change existing orders or line items, it only creates them. If you need to make a change to an order, it's easiest to archive the existing order and recreate it. But you can add new line items in the existing order using the setting DFP_USE_EXISTING_ORDER_IF_EXISTS. See [Extra Settings](#extra) above.
+*   If you need to make any change to an order other than specified in [update-line-item-setup](##update), it's easiest to archive the existing order and recreate it. You can add new line items in the existing order using the setting DFP_USE_EXISTING_ORDER_IF_EXISTS. See [Extra Settings](#extra) above.
