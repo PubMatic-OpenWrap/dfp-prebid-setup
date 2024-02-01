@@ -1,5 +1,3 @@
-
-
 from googleads import ad_manager
 from colorama import init
 import os
@@ -73,7 +71,7 @@ class BaseSettingUpdater:
 
 class VideoPositionUpdater(BaseSettingUpdater):
     """
-    Class for updating "Video Position" of line items.
+    Class for updating "Video Position Targeting" of line items.
     """
     def confirm_inputs(self):
         """
@@ -82,10 +80,10 @@ class VideoPositionUpdater(BaseSettingUpdater):
         formatted_text = """
 Confirm the Input:
 
-{name_start_format:<}Order{format_end}: {value_start_format}{order_name:<}{format_end}
-{name_start_format:<}LineItem Name Regex{format_end}: {value_start_format}{lineitem_regex:<}{format_end}
-{name_start_format:<}LineItem Type{format_end}: {value_start_format}{lineitem_type:<}{format_end}
-{name_start_format:<}New Video Position{format_end}: {value_start_format}{new_video_position:<}{format_end}
+{name_start_format}Order{format_end}: {value_start_format}{order_name}{format_end}
+{name_start_format}LineItem Name Regex{format_end}: {value_start_format}{lineitem_regex}{format_end}
+{name_start_format}LineItem Type{format_end}: {value_start_format}{lineitem_type}{format_end}
+{name_start_format}New Video Position{format_end}: {value_start_format}{new_video_position}{format_end}
         """
 
         self.logger.info(formatted_text.format(
@@ -162,8 +160,6 @@ Confirm the Input:
             ])
         self.logger.info(table)
 
-
-
     def select_line_items_to_update(self,line_items):
         """
         Selects line items to update based on specified criteria.
@@ -182,16 +178,6 @@ Confirm the Input:
         skip_line_items = {}
 
         for line_item in line_items:
-            # do not update line-item if targeting information is missing
-            if 'targeting' not in line_item or not line_item['targeting']:
-                skip_line_items[line_item['name']] = "targeting information is missing"
-                continue
-
-            # do not update line-item if targeting.requestPlatformTargeting (Inventory type) information is missing
-            if 'requestPlatformTargeting' not in line_item['targeting'] or not line_item['targeting']['requestPlatformTargeting']:
-                skip_line_items[line_item['name']] = "targeting.requestPlatformTargeting (Inventory type) information is missing"
-                continue
-
             # if targeting.videoPositionTargeting is missing then create empty object
             if 'videoPositionTargeting' not in line_item['targeting'] or not line_item['targeting']['videoPositionTargeting']:
                 line_item['targeting']['videoPositionTargeting'] = {}
@@ -265,17 +251,17 @@ Confirm the Input:
 
 def main():
     try:
-        logger = logging.getLogger(__name__)
         if len(sys.argv) != 2:
-            logger.info("Usage: python -m task.update [VideoPosition|UpdatePrice]")
-            logger.info("Example: python -m task.update VideoPosition")
+            print("Usage: python -m tasks.update [VideoPosition]")
+            print("Example: python -m tasks.update VideoPosition")
             return
 
-        update_task = sys.argv[1]
+        update_task = sys.argv[1].lower()
+        logger = logging.getLogger(__name__)
         color = Color()
 
         # Use settings based on the command-line argument
-        if update_task == "VideoPosition":
+        if update_task == "videoposition":
             updater = VideoPositionUpdater(logger,color, get_client(), update_settings.VideoPosition)
         else:
             print("Invalid setting class.")
