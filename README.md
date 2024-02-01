@@ -167,9 +167,10 @@ In most cases, you won't need to change these settings.
 |`DFP_CURRENCY_CODE`|National currency to use in line items.|string|`'USD'`|
 |`DFP_LINE_ITEM_FORMAT`|The format for the line item names.|string|`u'{bidder_code}: HB ${price}'`|
 
-## [update line item setup][update]
+## Update line item setup
+<a name="update-line-item-setup"></a>
 ***[Refer this link to update line item setup](docs/update.md)***
 
 ## Limitations
 
-*   If you need to make any change to an order other than specified in [update-line-item-setup](##update), it's easiest to archive the existing order and recreate it. You can add new line items in the existing order using the setting DFP_USE_EXISTING_ORDER_IF_EXISTS. See [Extra Settings](#extra) above.
+*   If you need to make any change to an order other than specified in [update-line-item-setup](#update-line-item-setup), it's easiest to archive the existing order and recreate it. You can add new line items in the existing order using the setting DFP_USE_EXISTING_ORDER_IF_EXISTS. See [Extra Settings](#extra) above.
