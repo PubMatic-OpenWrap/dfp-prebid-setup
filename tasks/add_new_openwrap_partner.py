@@ -9,7 +9,7 @@ import sys
 import tasks
 from builtins import input
 from pprint import pprint
-
+from prettytable import PrettyTable
 from colorama import init
 
 import constant
@@ -1099,23 +1099,22 @@ def load_price_csv(filename, setup_type):
         network = get_dfp_network()
         logger.info("Network currency : %s", network.currencyCode)
         exchange_rate = get_exchange_rate(network.currencyCode)
-
     logger.info("Currency exchange rate: {}".format(exchange_rate))
     #currency rate handling till here
     with open(filename, 'r') as csvfile:
         preader = csv.reader(csvfile)
         next(preader)  # skip header row
+        pg_ranges = []
         for row in preader:
                 # ignore extra lines or spaces
                 if row == [] or row[0].strip() == "":
                     continue
-                print(row)
-
+                pg_ranges.append(row)
                 try:
-                    start_range = float(row[2])
-                    end_range = float(row[3])
-                    granularity = float(row[4])
-                    rate_id = int(row[5])
+                    start_range = float(row[0].strip())
+                    end_range = float(row[1].strip())
+                    granularity = float(row[2].strip())
+                    rate_id = int(row[3].strip())
                     if setup_type == constant.ADPOD:
                         rate_id = 2
                 except ValueError:
@@ -1145,7 +1144,22 @@ def load_price_csv(filename, setup_type):
                         'granularity': 1.0,
                         'rate': get_calculated_rate(start_range, end_range, rate_id, exchange_rate, precision)
                      })
-
+        logger.info("\nPrice Granularity Ranges:")
+        table = PrettyTable()
+        table.field_names = [
+            f"{color.BOLD}Start Range{color.END}",
+            f"{color.BOLD}End Range{color.END}",
+            f"{color.BOLD}Granularity{color.END}",
+            f"{color.BOLD}RateId{color.END}",
+        ]
+        for start, end, price_granularity, rateId in pg_ranges:
+            table.add_row([
+                f"{color.BLUE}{start.strip()}{color.END}",
+                f"{color.BLUE}{end.strip()}{color.END}",
+                f"{color.BLUE}{price_granularity.strip()}{color.END}",
+                f"{color.BLUE}{rateId.strip()}{color.END}",
+            ])
+        logger.info(table)    
     return buckets
 
 def validateCSVValues(start_range, end_range, granularity, rate_id):
