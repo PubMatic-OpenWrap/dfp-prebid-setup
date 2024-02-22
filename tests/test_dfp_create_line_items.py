@@ -49,15 +49,18 @@ class DFPCreateLineItemsTests(TestCase):
                                                     ad_unit_ids=['ad-unit', 'anoher-ad-unit'], cpm_micro_amount=24000000, sizes=[{
           'width': '728',
           'height': '90',
-        }],key_gen_obj=key_gen_obj),
+        }],key_gen_obj=key_gen_obj, video_position_type="PREROLL", setup_type='VIDEO'),
       {
         'orderId': 1234567,
         'startDateTimeType': 'IMMEDIATELY',
+        'environmentType': 'VIDEO_PLAYER',
         'targeting': {
           'inventoryTargeting': {
             'targetedAdUnits': [{'adUnitId': 'ad-unit'}, {'adUnitId': 'anoher-ad-unit'}],
             'targetedPlacementIds': ['one-placement', 'another-placement-id']
           },
+          'requestPlatformTargeting': {'targetedRequestPlatforms': ['VIDEO_PLAYER']},
+          'videoPositionTargeting': {'targetedPositions': [{'videoPosition': {'positionType': 'PREROLL'}}]},
           'customTargeting': {
             'children': [
               {
@@ -86,6 +89,7 @@ class DFPCreateLineItemsTests(TestCase):
         'disableSameAdvertiserCompetitiveExclusion': False,
         'lineItemType': 'PRICE_PRIORITY',
         'unlimitedEndDateTime': True,
+        'videoMaxDuration':60000,
         'primaryGoal': {
           'goalType': 'NONE'
         },

@@ -21,7 +21,7 @@ def create_creatives(creatives):
   """
   dfp_client = get_client()
   creative_service = dfp_client.GetService('CreativeService',
-    version='v202211')
+    version='v202305')
   creatives = creative_service.createCreatives(creatives)
 
   # Return IDs of created line items.
@@ -144,7 +144,7 @@ def create_duplicate_creative_configs(bidder_code, order_name, advertiser_id, si
   return creative_configs
 
 def create_creative_configs_for_native(advertiser_id,creative_template_ids,
-  num_creatives=1, prefix=None):
+  num_creatives=1, prefix=None, user_def_var=None):
 
   creative_configs = []
   for template_id in creative_template_ids:
@@ -153,26 +153,37 @@ def create_creative_configs_for_native(advertiser_id,creative_template_ids,
           name= "{}_{}_native".format(prefix, template_id),
           advertiser_id=advertiser_id,
           creative_template_id=template_id,
+          user_def_var=user_def_var
         )
         creative_configs.append(config)
       
   return creative_configs
   
 
-def create_creative_config_native(name, advertiser_id, creative_template_id):
+def create_creative_config_native(name, advertiser_id, creative_template_id, user_def_var):
+  creative_template_var = None
+  if (user_def_var != None):
+    creative_template_var = [
+        {
+            'xsi_type': 'StringCreativeTemplateVariableValue',
+            'uniqueName': 'Title',
+            'value': user_def_var
+        }
+    ]
   creative = {
-    'xsi_type': 'TemplateCreative',
-    'name': name,
-    'advertiserId': advertiser_id,
-    'size': {
-      'width': '1', 
-      'height': '1',
-      'isAspectRatio': False
-    },
-    'creativeTemplateId': creative_template_id,
-    'destinationUrl': 'http://dummyURL.com',
-    'isSafeFrameCompatible': True,
-    'isNativeEligible': True
+      'xsi_type': 'TemplateCreative',
+      'name': name,
+      'advertiserId': advertiser_id,
+      'size': {
+        'width': '1', 
+        'height': '1',
+        'isAspectRatio': False
+      },
+      'creativeTemplateId': creative_template_id,
+      'destinationUrl': 'https://pubmatic.com/',
+      'creativeTemplateVariableValues': creative_template_var,
+      'isSafeFrameCompatible': True,
+      'isNativeEligible': True
   }
   return creative
 
