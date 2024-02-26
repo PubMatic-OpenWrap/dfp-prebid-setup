@@ -127,8 +127,6 @@ PREBID_PRICE_BUCKETS = {
 }
 
 # OpenWrap: Buckets are specified in a CSV file
-#  Same file format as the PubMatic Line Item tool
-#  Order and advertiser name from csv are ignored
 OPENWRAP_BUCKET_CSV = 'LineItem.csv'
 
 # Optional
