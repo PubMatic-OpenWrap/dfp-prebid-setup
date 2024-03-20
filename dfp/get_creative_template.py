@@ -19,10 +19,10 @@ def get_creative_template_by_name(template_name):
     dfp_client = get_client()
     # Initialize appropriate service.
     creative_template_service = dfp_client.GetService(
-      'CreativeTemplateService', version='v202305')
+      'CreativeTemplateService', version='v202402')
 
      # Create a statement to select creative templates.
-    statement = (ad_manager.StatementBuilder(version='v202305')
+    statement = (ad_manager.StatementBuilder(version='v202402')
      .Where('name = :name')
      .WithBindVariable('name', template_name))
 

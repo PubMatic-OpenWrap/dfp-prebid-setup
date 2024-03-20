@@ -26,7 +26,7 @@ def get_root_ad_unit_id():
   """
 
   dfp_client = get_client()
-  network_service = dfp_client.GetService('NetworkService', version='v202305')
+  network_service = dfp_client.GetService('NetworkService', version='v202402')
   current_network = network_service.getCurrentNetwork()
 
   return current_network['effectiveRootAdUnitId']
