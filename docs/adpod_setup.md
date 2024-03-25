@@ -39,7 +39,6 @@
 #### Inline Header Bidding csv 
 For Adpod setup use/edit one of the following csv files present in `dfp-prebid-setup`  folder for `OPENWRAP_BUCKET_CSV` parameter 
 
- ***Note: Ignore the Order Name and Advertiser columns are in the CSV file. Specify those settings in, settings.py ***
  ***In the line item csv files the `rate_id` value should always be `2 (minimum)` for Adpod setup***
  
 |  Price Granularity | CSV File |
@@ -63,11 +62,11 @@ For Adpod setup use/edit one of the following csv files present in `dfp-prebid-s
 2. Enter a granularity level of -1 for the final line item. This covers all targeting within the range to the endpoint. 
 (the last line with granularity “-1” covers all bids between $20-$30): 
 
-| order_name | advertiser | start_range | end_range | granularity | rate_id |
-|--|--|--|--|--| --|
-|"Pubmatic HB" | "Pubmatic" | 0 | 10 | 1 | 2 |
-|"Pubmatic HB" | "Pubmatic" | 10 | 20 | 2 | 2 
-|"Pubmatic HB" | "Pubmatic" | 20 | 30 | -1 | 2 
+| start_range | end_range | granularity | rate_id |
+|--|--|--| --|
+|0 | 10 | 1 | 2 |
+|10 | 20 | 2 | 2 |
+|20 | 30 | -1 | 2 |
 
 *****Rates (pwtpb) created with above granularity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16 ,18, 20]***** 
 

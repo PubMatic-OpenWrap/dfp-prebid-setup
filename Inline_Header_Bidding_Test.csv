@@ -1,2 +1,2 @@
-order_name,advertiser,start_range,end_range,granularity,"rate_id[1=Average, 2=Minimum] "
-Shriprasad_Test_Advertiser,inlinehb_Adpod_setup_test_order,5,10,5.0,2
+start_range,end_range,granularity,"rate_id[1=Average, 2=Minimum] "
+5,10,5.0,2
