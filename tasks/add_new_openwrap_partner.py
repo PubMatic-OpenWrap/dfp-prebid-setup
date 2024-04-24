@@ -99,6 +99,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.bidder_criteria = None
         self.platform_criteria = None
         self.price_els = None
+        self.price_bucket = None
         self.jwPriceValueGetter = None
         self.jw_price_key_id = None
         self.setup_type = None
@@ -108,11 +109,13 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.pwtpid_key_id = None
         self.pwtbst_key_id  = None  
         self.pwtecp_key_id = None
+        self.pwtpb_key_id = None
         self.pwtplt_key_id = None
         self.BidderValueGetter = None
         self.BidderValueGetter = None
         self.BstValueGetter = None
         self.PriceValueGetter = None
+        self.PBValueGetter = None
         self.PltValueGetter = None
         self.creativeTargeting = None
         self.pwtbst_value_id = None
@@ -123,12 +126,14 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.pwtpid_key_id = get_or_create_dfp_targeting_key('pwtpid', key_type='PREDEFINED')  # bidder
         self.pwtbst_key_id = get_or_create_dfp_targeting_key('pwtbst', key_type='PREDEFINED')  # is pwt
         self.pwtecp_key_id = get_or_create_dfp_targeting_key('pwtecp', key_type='FREEFORM') # price
+        self.pwtpb_key_id = get_or_create_dfp_targeting_key('pwtpb', key_type='FREEFORM') # price bucket for HVLI
         self.pwtplt_key_id = get_or_create_dfp_targeting_key('pwtplt', key_type='PREDEFINED') # platform
 
         # Instantiate DFP targeting value ID getters for the targeting keys.
         self.BidderValueGetter = DFPValueIdGetter('pwtpid')
         self.BstValueGetter = DFPValueIdGetter('pwtbst')
         self.PriceValueGetter = DFPValueIdGetter('pwtecp', match_type='PREFIX')
+        self.PBValueGetter = DFPValueIdGetter('pwtpb')
         self.PltValueGetter = DFPValueIdGetter('pwtplt')
 
         self.pwtbst_value_id = self.BstValueGetter.get_value_id("1")    
@@ -190,6 +195,15 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         self.bid_price = {
             'xsi_type': 'CustomCriteria',
             'keyId': key_id,
+            'valueIds': [value_id],
+            'operator': 'IS'
+        }
+
+    def set_price_bucket(self,price):
+        value_id =  self.PBValueGetter.get_value_id(price)
+        self.price_bucket = {
+            'xsi_type': 'CustomCriteria',
+            'keyId': self.pwtpb_key_id,
             'valueIds': [value_id],
             'operator': 'IS'
         }
@@ -344,10 +358,6 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         if self.bidder_criteria:
             top_set['children'].append(self.bidder_criteria)
 
-        #pwtecp
-        if self.price_set:
-            top_set['children'].append(self.price_set)
-
         #pwtdt
         if  self.deal_tier:
             top_set['children'].append(self.deal_tier)
@@ -374,12 +384,54 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
             if self.bid_price: 
                 top_set['children'].append(self.bid_price)
 
+            # For HVLI, set both pwtbb and pwtecp with OR condition
+            # Targeting keys will be formed like
+            # pwtecp IS (1.*) AND pwtbst=1 AND pwtpid = abc
+            # or
+            # pwtpb = 1.0 AND pwtbst=1 AND pwtpid = abc
+            if self.price_bucket:
+                #pwtecp
+                cust_key_set1 = {
+                    'xsi_type': 'CustomCriteriaSet',
+                    'logicalOperator': 'AND',
+                    'children': []
+                }
+                cust_key_set1['children'].append(top_set)
+                cust_key_set1['children'].append(self.price_set)
+
+                #pwtpb
+                cust_key_set2 = {
+                    'xsi_type': 'CustomCriteriaSet',
+                    'logicalOperator': 'AND',
+                    'children': []
+                }
+                cust_key_set2['children'].append(top_set)
+                cust_key_set2['children'].append(self.price_bucket)
+
+                #final keys will be OR of both sets
+                final_cust_keys = {
+                    'xsi_type': 'CustomCriteriaSet',
+                    'logicalOperator': 'OR',
+                    'children': [cust_key_set1, cust_key_set2 ]
+                }
+                return final_cust_keys
+            else:
+                #Include only 'pwtecp' in the final targeting key set
+                #eg: pwtecp IS (1.*) AND pwtbst=1 AND pwtpid = abc
+                if self.price_set:
+                     top_set['children'].append(self.price_set)
+
         return top_set
 
     def process_price_bucket(self, start_index, end_index, granu):
 
         subCustomValueArray = []
         sub_granu = None
+
+        hvli = False
+        if granu == -1:
+            hvli = True
+            granu = 1.0
 
         if granu < 0.10:
             sub_granu = 0.01
@@ -391,6 +443,11 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         # if granu is .20 then $r=0 if .25 then $r=5
         r = (granu * 100) % 10
         k = start_index
+
+        #if csv record is the last one with end index as 999, create price value only with the start range
+        if hvli and end_index == 999:
+            subCustomValueArray.append(str(round(start_index,2)))
+            return subCustomValueArray
 
         while round(k,2) < round(end_index,2):
 
@@ -949,6 +1006,9 @@ def create_line_item_configs(prices, order_id, placement_ids, bidder_code, sizes
     # Set DFP custom targeting for key `pwtecp`
     if setup_type is not constant.ADPOD:
         key_gen_obj.set_price_value(price)
+        #add 'pwtpb' key for the highest value LI
+        if price['granularity'] == -1:
+            key_gen_obj.set_price_bucket(num_to_str(price['start'], precision=2))
 
      # Set DFP custom targeting for key `pwtpb`
     if setup_type  == constant.ADPOD:
@@ -1052,10 +1112,14 @@ def get_unique_id(setup_type):
         uid = u'VIDEO_{}'.format(uid)
     return uid
 
-def get_calculated_rate(start_rate_range, end_rate_range, rate_id, exchange_rate, precision):
+def get_calculated_rate(start_rate_range, end_rate_range, rate_id, exchange_rate, precision, granularity):
 
     if(start_rate_range == 0 and rate_id == 2):
         rate_id = 1
+
+    #for HVLI with no end range (999), use start range for the rate
+    if granularity == -1 and rate_id == 1 and end_rate_range == 999:
+        rate_id = 2
 
     if rate_id == 2:
         return round(start_rate_range * exchange_rate, precision)
@@ -1105,7 +1169,9 @@ def load_price_csv(filename, setup_type):
         preader = csv.reader(csvfile)
         next(preader)  # skip header row
         pg_ranges = []
+        last_row = []
         for row in preader:
+                last_row = row
                 # ignore extra lines or spaces
                 if row == [] or row[0].strip() == "":
                     continue
@@ -1120,7 +1186,7 @@ def load_price_csv(filename, setup_type):
                 except ValueError:
                     raise BadSettingException('Start range, end range, granularity and rate id should be number. Please correct the csv and try again.')
 
-                validateCSVValues(start_range, end_range, granularity, rate_id)
+                validateCSVValues(start_range, end_range, granularity, rate_id, False)
 
                 if granularity != -1:
                     i = start_range
@@ -1134,16 +1200,20 @@ def load_price_csv(filename, setup_type):
                                 'start': i,
                                 'end': a,
                                 'granularity': granularity,
-                                'rate': get_calculated_rate(i, a, rate_id, exchange_rate, precision)
+                                'rate': get_calculated_rate(i, a, rate_id, exchange_rate, precision, granularity)
                              })
                         i = a
                 else:
                      buckets.append({
                         'start': start_range,
                         'end': end_range,
-                        'granularity': 1.0,
-                        'rate': get_calculated_rate(start_range, end_range, rate_id, exchange_rate, precision)
+                        'granularity': -1,
+                        'rate': get_calculated_rate(start_range, end_range, rate_id, exchange_rate, precision, granularity)
                      })
+
+        #check if granularity of the last record is -1
+        validateCSVValues(float(row[0].strip()) ,float(row[1].strip()),float(row[2].strip()),int(row[3].strip()), True)
+
         logger.info("\nPrice Granularity Ranges:")
         table = PrettyTable()
         table.field_names = [
@@ -1162,7 +1232,11 @@ def load_price_csv(filename, setup_type):
         logger.info(table)    
     return buckets
 
-def validateCSVValues(start_range, end_range, granularity, rate_id):
+def validateCSVValues(start_range, end_range, granularity, rate_id, last_record):
+   
+    if last_record and granularity != -1:
+            raise BadSettingException('\nThe last record of CSV should have granularity as -1 for the highest value line item. Please correct the csv and try again.')
+    
     if start_range < 0 or end_range < 0 :
         raise BadSettingException('Start range and end range can not be negative. Please correct the csv and try again.')
 
