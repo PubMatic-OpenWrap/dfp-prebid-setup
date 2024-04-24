@@ -428,9 +428,9 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         subCustomValueArray = []
         sub_granu = None
 
-        hvli = False
+        is_highest_val_lineitem = False
         if granu == -1:
-            hvli = True
+            is_highest_val_lineitem = True
             granu = 1.0
 
         if granu < 0.10:
@@ -445,7 +445,7 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
         k = start_index
 
         #if csv record is the last one with end index as 999, create price value only with the start range
-        if hvli and end_index == 999:
+        if is_highest_val_lineitem and end_index == 999:
             subCustomValueArray.append(str(round(start_index,2)))
             return subCustomValueArray
 
@@ -1232,9 +1232,9 @@ def load_price_csv(filename, setup_type):
         logger.info(table)    
     return buckets
 
-def validateCSVValues(start_range, end_range, granularity, rate_id, last_record):
+def validateCSVValues(start_range, end_range, granularity, rate_id, is_last_record):
    
-    if last_record and granularity != -1:
+    if is_last_record and granularity != -1:
             raise BadSettingException('\nThe last record of CSV should have granularity as -1 for the highest value line item. Please correct the csv and try again.')
     
     if start_range < 0 or end_range < 0 :
