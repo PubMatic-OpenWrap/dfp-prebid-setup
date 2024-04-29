@@ -367,8 +367,11 @@ class OpenWrapTargetingKeyGen(TargetingKeyGen):
             top_set['children'].append(self.dealids)
 
         # dont set other targetting for JW Player
-        if self.setup_type is not constant.JW_PLAYER:
-
+        if self.setup_type is constant.JW_PLAYER:
+            #vpb_pubmatic_bid
+            if self.price_set:
+                top_set['children'].append(self.price_set)
+        else:
             if self.setup_type not in (constant.ADPOD, constant.IN_APP, constant.IN_APP_VIDEO, constant.IN_APP_NATIVE):
                 #pwtbst
                 top_set['children'].append(pwt_bst_criteria)
