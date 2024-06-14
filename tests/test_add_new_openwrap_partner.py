@@ -1,6 +1,7 @@
 
 from ast import Constant
 from unittest import TestCase
+from venv import logger
 
 from mock import MagicMock, patch
 import json
@@ -303,44 +304,50 @@ class AddNewOpenwrapPartnerTests(TestCase):
     It throws an exception with start range and end range can not be negative.
     """
     with self.assertRaises(BadSettingException):
-      tasks.add_new_openwrap_partner.validateCSVValues(-1,-2,1,1)
+      tasks.add_new_openwrap_partner.validateCSVValues(-1,-2,1,1, False)
 
   def test_validate_CSVValues_start_range_more_than_end_range(self,mock_dfp_client):
     """
     It throws an exception with Start range can not be more than end range.
     """
     with self.assertRaises(BadSettingException):
-      tasks.add_new_openwrap_partner.validateCSVValues(4,1,1,1)
+      tasks.add_new_openwrap_partner.validateCSVValues(4,1,1,1, False)
 
   def test_validate_CSVValues_invalid_rate_ID(self,mock_dfp_client):
     """
     It throws an exception with Rate id can only be 1 or 2.
     """
     with self.assertRaises(BadSettingException):
-      tasks.add_new_openwrap_partner.validateCSVValues(1,5,1,3)
+      tasks.add_new_openwrap_partner.validateCSVValues(1,5,1,3, False)
   
   def test_validate_CSVValues_invalid_start_range_and_price_granularity(self,mock_dfp_client):
     """
     It throws an exception with Start range can not be less than 0.01 for granularity 0.01.
     """
     with self.assertRaises(BadSettingException):
-      tasks.add_new_openwrap_partner.validateCSVValues(0.001,5,0.01,2)
+      tasks.add_new_openwrap_partner.validateCSVValues(0.001,5,0.01,2, False)
 
   def test_validate_CSVValues_End_range_can_not_be_more_than_999(self,mock_dfp_client):
     """
     It throws an exception with End range can not be more than 999.
     """
     with self.assertRaises(BadSettingException):
-      tasks.add_new_openwrap_partner.validateCSVValues(1,1000,1,1)
+      tasks.add_new_openwrap_partner.validateCSVValues(1,1000,1,1, False)
   
   def test_validate_CSVValues_invalid_granularity(self,mock_dfp_client):
     """
     It throws an exception with Zero is not accepted as granularity.
     """
     with self.assertRaises(BadSettingException):
-      tasks.add_new_openwrap_partner.validateCSVValues(1,5,0,1)
+      tasks.add_new_openwrap_partner.validateCSVValues(1,5,0,1,False)
 
- 
+  def test_validate_CSVValues_invalid_granularity_last_record(self,mock_dfp_client):
+    """
+    It throws an exception with Zero is not accepted as granularity.
+    """
+    with self.assertRaises(BadSettingException):
+      tasks.add_new_openwrap_partner.validateCSVValues(1,5,0,1,True)
+
   @patch('dfp.get_orders.get_order_by_name',return_value={
                'id': 1234567,
                'order_count': 1,
@@ -1236,6 +1243,18 @@ class AddNewOpenwrapPartnerTests(TestCase):
     actual=obj.process_price_bucket(0,1.05,0.25)
     self.assertEqual(actual,['0.01', '0.02', '0.03', '0.04', '0.05', '0.06', '0.07', '0.08', '0.09', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.00', '1.01', '1.02', '1.03', '1.04'])
 
+  def test_process_price_bucket_k_is_equal_to_0(self,mock_dfp_client):
+    actual=obj.process_price_bucket(0,1.05,0.25)
+    self.assertEqual(actual,['0.01', '0.02', '0.03', '0.04', '0.05', '0.06', '0.07', '0.08', '0.09', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.00', '1.01', '1.02', '1.03', '1.04'])
+
+  def test_process_price_bucket_hvli_with_endrange(self,mock_dfp_client):
+    actual=obj.process_price_bucket(5,10,-1)
+    self.assertEqual(actual,['5.', '6.', '7.', '8.', '9.'])
+
+  def test_process_price_bucket_hvli_no_endrange(self,mock_dfp_client):
+    actual=obj.process_price_bucket(5,999,-1)
+    self.assertEqual(actual,['5'])
+
   @patch('dfp.get_custom_targeting')
   def test_create_line_item_configs(self, mock_get_targeting, mock_dfp_client):
     """
@@ -1251,7 +1270,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     {
        'start': 2,
        'end': 5,
-       'granularity': 1,
+       'granularity': -1,
        'rate': 3.5
     }]
 
