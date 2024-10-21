@@ -25,6 +25,49 @@ class TestBaseSettingUpdater(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             updater.update()
 
+    @patch('builtins.input', return_value='y')
+    def test_update_line_items_multiple_lineitem(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = [{'id': 12345, 'name': 'Line Item 1', 'status': 'PAUSED'}, {'id': 67890, 'name': 'Line Item 2', 'status': 'ACTIVE'}]
+        mock_line_item_service = MagicMock()
+        mock_line_item_service = self.ad_manager_client.GetService.return_value
+        mock_line_item_service.updateLineItems.return_value = line_items_to_update
+        #self.ad_manager_client.updateLineItems.return_value = line_items_to_update
+        updater.update_line_items(line_items_to_update)
+        updater.logger.info.assert_called()
+        assert updater.logger.info.call_count == 3
+
+    @patch('builtins.input', return_value='n')
+    def test_update_line_items_user_cancels_update(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = [{'id': 12345, 'name': 'Line Item 1', 'status': 'ACTIVE'}]
+        updater.update_line_items(line_items_to_update)
+        self.logger.info.assert_called_once_with("Update canceled.")
+        assert updater.logger.info.call_count == 1
+
+    @patch('builtins.input', return_value='y')
+    def test_update_line_items_no_lineitem_to_update(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = [{'id': 12345, 'name': 'Line Item 1', 'status': 'ACTIVE'}]
+        mock_line_item_service = MagicMock()
+        mock_line_item_service = self.ad_manager_client.GetService.return_value
+        mock_line_item_service.updateLineItems.return_value = []
+        updater.update_line_items(line_items_to_update)
+        self.logger.info.assert_called_once_with("No line items were updated.")
+        assert updater.logger.info.call_count == 1
+
+    @patch('builtins.input', return_value='y')
+    def test_update_line_items_empty_lineitems(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = []
+        updater.update_line_items(line_items_to_update)
+        self.logger.info.assert_called_once_with("No line items matched the criteria for update.")
+        assert updater.logger.info.call_count == 1
+
 class TestVideoPositionUpdater(unittest.TestCase):
     """
     Unit tests for the VideoPositionUpdater class.
@@ -307,8 +350,7 @@ class TestVideoPositionUpdater(unittest.TestCase):
             with patch.object(updater, 'select_line_items_to_update', return_value=([], {}, {})):
                 updater.update()
 
-        mock_logger.info.assert_not_called()
-        mock_ad_manager_client.GetService.assert_not_called()
+        mock_logger.info.assert_called_once_with("No line items matched the criteria for update.")
 
 
     @patch('builtins.input', return_value='n')

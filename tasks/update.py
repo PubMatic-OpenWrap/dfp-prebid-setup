@@ -6,7 +6,6 @@ import sys
 import update_settings
 from dfp.client import get_client
 from prettytable import PrettyTable
-from tasks.update_utils import UpdateUtils
 
 # Colorama for cross-platform support for colored logging.
 # https://github.com/kmjennison/dfp-prebid-setup/issues/9
@@ -69,6 +68,42 @@ class BaseSettingUpdater:
         """
         raise NotImplementedError("Subclass must implement this method")
 
+    def get_line_items(self):
+        """
+        Function to build the statement based on filter condition and return all selected line items
+        """
+        statement = (ad_manager.StatementBuilder()
+                 .Where('orderName = :order_name AND name LIKE :line_item_name AND lineItemType = :line_item_type')
+                 .WithBindVariable('order_name', self.setting_class.DFP_ORDER_NAME)
+                 .WithBindVariable('line_item_name', self.setting_class.LINE_ITEM_NAME_REGEX)
+                 .WithBindVariable('line_item_type', self.setting_class.DFP_LINEITEM_TYPE))
+
+        response = self.ad_manager_client.GetService('LineItemService', version=self.API_VERSION).getLineItemsByStatement(statement.ToStatement())
+        return response
+
+    def update_line_items(self, line_items_to_update):
+        """
+        Updates the selected line items and logs the results.
+        Parameters:
+            line_items_to_update (list): List of line items to update.
+        """
+        if len(line_items_to_update) > 0:
+            user_confirmation = input("Do you want to proceed with the update? (y/n): ").lower()
+            if user_confirmation != 'y':
+                self.logger.info("Update canceled.")
+                return
+
+            line_item_service = self.ad_manager_client.GetService('LineItemService', version=self.API_VERSION)
+            returned_line_items = line_item_service.updateLineItems(line_items_to_update)
+            if len(returned_line_items) > 0:
+                self.logger.info("\nSuccessfully updated following line items")
+                for line_item in returned_line_items:
+                    self.logger.info(f"{self.color.BLUE}{line_item['name']}{self.color.END}")
+            else:
+                self.logger.info("No line items were updated.")
+        else:
+            self.logger.info("No line items matched the criteria for update.")
+
 
 class VideoPositionUpdater(BaseSettingUpdater):
     """
@@ -105,9 +140,6 @@ Confirm the Input:
             self.logger.info('NEW_VIDEO_POSITION supports only one of the value ("PREROLL", "MIDROLL", "POSTROLL")')
             return False
         return True
-
-    def get_line_items(self):
-       return UpdateUtils.get_line_items(self)
 
     def print_skipped_line_items(self, skip_line_items):
         """
@@ -226,19 +258,7 @@ Confirm the Input:
         self.print_skipped_line_items(skip_line_items)
         self.print_line_items_with_current_position(line_items_with_current_position)
 
-        if len(line_items_to_update) > 0:
-            user_confirmation = input("Do you want to proceed with the update? (y/n): ").lower()
-            if user_confirmation != 'y':
-                self.logger.info("Update canceled.")
-                return
-
-            line_item_service = self.ad_manager_client.GetService('LineItemService', version=self.API_VERSION)
-            returned_line_items=line_item_service.updateLineItems(line_items_to_update)
-            if len(returned_line_items) > 0:
-                self.logger.info("\nSuccessfully updated following line items")
-                for line_item in returned_line_items:
-                    self.logger.info(f"{self.color.BLUE}{line_item['name']}{self.color.END}")
-
+        self.update_line_items(line_items_to_update)
 
 class LineItemTypeUpdater(BaseSettingUpdater):
     """
@@ -280,12 +300,6 @@ Confirm the Input:
             self.logger.info('NEW_LINEITEM_TYPE supports only one of the value ("NETWORK", "HOUSE", "PRICE_PRIORITY", "SPONSORSHIP")')
             return False
         return True
-
-    def get_line_items(self):
-        return UpdateUtils.get_line_items(self)
-
-    def print_skipped_line_items(self, skip_line_items):
-        UpdateUtils.print_skipped_line_items(skip_line_items)
 
     def print_line_items_with_current_type(self, line_items_to_update):
         """
@@ -367,22 +381,7 @@ Confirm the Input:
         line_items_to_update, line_items_with_current_type = self.select_line_items_to_update(line_items)
         self.print_line_items_with_current_type(line_items_with_current_type)
 
-        if len(line_items_to_update) > 0:
-            user_confirmation = input("Do you want to proceed with the update? (y/n): ").lower()
-            if user_confirmation != 'y':
-                self.logger.info("Update canceled.")
-                return
-
-            line_item_service = self.ad_manager_client.GetService('LineItemService', version=self.API_VERSION)
-            returned_line_items=line_item_service.updateLineItems(line_items_to_update)
-            if len(returned_line_items) > 0:
-                self.logger.info("\nSuccessfully updated following line items")
-                for line_item in returned_line_items:
-                    self.logger.info(f"{self.color.BLUE}{line_item['name']}{self.color.END}")
-            else:
-                self.logger.info("No line items were updated.")
-        else:
-            self.logger.info("No line items matched the criteria for update.")
+        self.update_line_items(line_items_to_update)
 
 def main():
     try:
