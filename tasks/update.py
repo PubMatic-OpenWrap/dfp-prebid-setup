@@ -110,7 +110,23 @@ Confirm the Input:
        return UpdateUtils.get_line_items(self)
 
     def print_skipped_line_items(self, skip_line_items):
-        UpdateUtils.print_skipped_line_items(skip_line_items)
+        """
+        Function to print the line items that will not be updated by script along with its reason
+        """
+        if len(skip_line_items) <= 0:
+            return
+        table = PrettyTable()
+        self.logger.info("Following line items will not be updated:")
+        table.field_names = [
+            f"{self.color.BOLD}Line Item Name{self.color.END}",
+            f"{self.color.BOLD}Reason{self.color.END}",
+        ]
+        for line_item,reason in skip_line_items.items():
+            table.add_row([
+                f"{self.color.BLUE}{line_item}{self.color.END}",
+                f"{self.color.BLUE}{reason}{self.color.END}",
+            ])
+        self.logger.info(table)
 
     def print_line_items_with_current_position(self, line_items_to_update):
         """
@@ -302,30 +318,27 @@ Confirm the Input:
         Returns:
                 1. List of line items to be updated.
                 2. Dictionary mapping line item names to their current targeted line item types.
-                3. Dictionary containing line item names and reasons for skipping (not updating) each line item.
         """
         # List of line items to be updated
         updated_line_items = []
         # Dictionary mapping line item names to their current targeted line item types.
         line_items_with_current_type = {}
-        # Dictionary containing line item names and reasons for skipping (not updating) each line item.
-        skip_line_items = {}
-
         for line_item in line_items:
             current_type = line_item['lineItemType']
-            if current_type == self.setting_class.NEW_LINEITEM_TYPE:
-                skip_line_items[line_item['name']] = "attempt to target same line item type multiple time"
-                continue
 
             line_item['lineItemType'] = self.setting_class.NEW_LINEITEM_TYPE
             if self.setting_class.NEW_LINEITEM_TYPE in ('NETWORK','HOUSE'):
-                line_item['primaryGoal']['goalType'] = 'DAILY'
-                line_item['primaryGoal']['units'] = 100
+                if 'primaryGoal' in line_item:
+                    line_item['primaryGoal']['goalType'] = 'DAILY'
+                    line_item['primaryGoal']['units'] = 100
+                if self.setting_class.NEW_LINEITEM_TYPE == "HOUSE":
+                    line_item['priority'] = 16
 
             elif self.setting_class.NEW_LINEITEM_TYPE in ('SPONSORSHIP'):
-                line_item['primaryGoal']['unitType'] = 'IMPRESSIONS'
-                line_item['primaryGoal']['goalType'] = 'DAILY'
-                line_item['primaryGoal']['units'] = 100
+                if 'primaryGoal' in line_item:
+                    line_item['primaryGoal']['unitType'] = 'IMPRESSIONS'
+                    line_item['primaryGoal']['goalType'] = 'DAILY'
+                    line_item['primaryGoal']['units'] = 100
                 line_item['skipInventoryCheck'] = True
                 line_item['allowOverbook'] = True
                 line_item['priority'] = 4
@@ -333,13 +346,10 @@ Confirm the Input:
             elif self.setting_class.NEW_LINEITEM_TYPE == "PRICE_PRIORITY":
                 line_item['priority'] = 12
 
-            elif self.setting_class.NEW_LINEITEM_TYPE == "HOUSE":
-                line_item['priority'] = 16
-
             line_items_with_current_type[line_item['name']]=current_type
             updated_line_items.append(line_item)
 
-        return updated_line_items, line_items_with_current_type, skip_line_items
+        return updated_line_items, line_items_with_current_type
 
     def update(self):
         """
@@ -354,8 +364,7 @@ Confirm the Input:
             self.logger.info("No line item found for given input")
             return
 
-        line_items_to_update, line_items_with_current_type, skip_line_items = self.select_line_items_to_update(line_items)
-        self.print_skipped_line_items(skip_line_items)
+        line_items_to_update, line_items_with_current_type = self.select_line_items_to_update(line_items)
         self.print_line_items_with_current_type(line_items_with_current_type)
 
         if len(line_items_to_update) > 0:

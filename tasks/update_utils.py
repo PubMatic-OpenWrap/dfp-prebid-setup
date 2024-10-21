@@ -6,27 +6,6 @@ from colorama import Fore, Style
 
 class UpdateUtils:
     @staticmethod
-    def print_skipped_line_items(skip_line_items):
-        """
-        Function to print the line items that will not be updated by script along with its reason
-        """
-        if len(skip_line_items) <= 0:
-            return
-
-        table = PrettyTable()
-        print("Following line items will not be updated:")
-        table.field_names = [
-            f"{Fore.BLUE}Line Item Name{Style.RESET_ALL}",
-            f"{Fore.BLUE}Reason{Style.RESET_ALL}",
-        ]
-        for line_item, reason in skip_line_items.items():
-            table.add_row([
-                f"{Fore.BLUE}{line_item}{Style.RESET_ALL}",
-                f"{Fore.BLUE}{reason}{Style.RESET_ALL}",
-            ])
-        print(table)
-
-    @staticmethod
     def get_line_items(self):
         """
         Function to build the statement based on filter condition and return all selected line items
