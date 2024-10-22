@@ -447,7 +447,7 @@ class TestLineItemUpdater(unittest.TestCase):
         line_items = [{'name': 'LineItem1', 'lineItemType': 'PRICE_PRIORITY', 'primaryGoal':{}}]
         updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
 
-        expected = ([{'name': 'LineItem1', 'lineItemType': 'NETWORK', 'primaryGoal':{'goalType': 'DAILY', 'units': 100}}], {'LineItem1': 'PRICE_PRIORITY'})
+        expected = ([{'name': 'LineItem1', 'lineItemType': 'NETWORK', 'primaryGoal':{'goalType': 'DAILY', 'units': 100},'priority': 12}], {'LineItem1': 'PRICE_PRIORITY'})
 
         self.assertEqual(updater.select_line_items_to_update(line_items) ,expected)
 
@@ -507,7 +507,8 @@ class TestLineItemUpdater(unittest.TestCase):
                 'primaryGoal' : {
                     'goalType' : 'DAILY',
                     'units' : 100
-                }
+                },
+                'priority': 12
             },
             {
                 'name': 'line_item_2',
@@ -515,7 +516,8 @@ class TestLineItemUpdater(unittest.TestCase):
                 'primaryGoal' : {
                     'goalType' : 'DAILY',
                     'units' : 100
-                }
+                },
+                'priority': 12
             },
             {
                 'name': 'line_item_3',
@@ -523,7 +525,8 @@ class TestLineItemUpdater(unittest.TestCase):
                 'primaryGoal' : {
                     'goalType' : 'DAILY',
                     'units' : 100
-                }
+                },
+                'priority': 12
             }
         ]
 

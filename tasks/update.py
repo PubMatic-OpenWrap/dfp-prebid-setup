@@ -345,8 +345,7 @@ Confirm the Input:
                 if 'primaryGoal' in line_item:
                     line_item['primaryGoal']['goalType'] = 'DAILY'
                     line_item['primaryGoal']['units'] = 100
-                if self.setting_class.NEW_LINEITEM_TYPE == "HOUSE":
-                    line_item['priority'] = 16
+                line_item['priority'] = 12 if self.setting_class.NEW_LINEITEM_TYPE == "NETWORK" else 16
 
             elif self.setting_class.NEW_LINEITEM_TYPE in ('SPONSORSHIP'):
                 if 'primaryGoal' in line_item:
