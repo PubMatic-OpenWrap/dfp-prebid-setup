@@ -35,6 +35,7 @@ class VideoPosition:
 # To execute the update, use the command: `python3 -m tasks.update LineItemType`.
 # The task requires input parameters such as DFP_ORDER_NAME, LINE_ITEM_NAME_REGEX, and DFP_LINEITEM_TYPE,
 # and it performs the update by setting the line item type of all selected line items to the specified NEW_LINEITEM_TYPE.
+# Don't use this utility for updating Lineitems for the ADPOD setup as it could interfere with the existing deal setup for sponsorship line items and cause unexpected behavior.
 class LineItemType:
 
     # DFP_ORDER_NAME: A string describing the order. Line items will be updated from this order.

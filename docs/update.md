@@ -72,4 +72,8 @@ python -m tasks.update LineItemType
 **Limitations:**
 
 1. Line item to be updated should have been created using tasks/add_new_openwrap_partner.py
+2. This task should not be used for updating line items of Adpod setup, as it could interfere with the existing deal setup for sponsorship line items and cause unexpected behavior.
+
+
+
 </details>
