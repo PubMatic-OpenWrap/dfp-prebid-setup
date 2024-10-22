@@ -25,6 +25,49 @@ class TestBaseSettingUpdater(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             updater.update()
 
+    @patch('builtins.input', return_value='y')
+    def test_update_line_items_multiple_lineitem(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = [{'id': 12345, 'name': 'Line Item 1', 'status': 'PAUSED'}, {'id': 67890, 'name': 'Line Item 2', 'status': 'ACTIVE'}]
+        mock_line_item_service = MagicMock()
+        mock_line_item_service = self.ad_manager_client.GetService.return_value
+        mock_line_item_service.updateLineItems.return_value = line_items_to_update
+        #self.ad_manager_client.updateLineItems.return_value = line_items_to_update
+        updater.update_line_items(line_items_to_update)
+        updater.logger.info.assert_called()
+        assert updater.logger.info.call_count == 3
+
+    @patch('builtins.input', return_value='n')
+    def test_update_line_items_user_cancels_update(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = [{'id': 12345, 'name': 'Line Item 1', 'status': 'ACTIVE'}]
+        updater.update_line_items(line_items_to_update)
+        self.logger.info.assert_called_once_with("Update canceled.")
+        assert updater.logger.info.call_count == 1
+
+    @patch('builtins.input', return_value='y')
+    def test_update_line_items_no_lineitem_to_update(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = [{'id': 12345, 'name': 'Line Item 1', 'status': 'ACTIVE'}]
+        mock_line_item_service = MagicMock()
+        mock_line_item_service = self.ad_manager_client.GetService.return_value
+        mock_line_item_service.updateLineItems.return_value = []
+        updater.update_line_items(line_items_to_update)
+        self.logger.info.assert_called_once_with("No line items were updated.")
+        assert updater.logger.info.call_count == 1
+
+    @patch('builtins.input', return_value='y')
+    def test_update_line_items_empty_lineitems(self,_):
+        updater = BaseSettingUpdater(self.logger, self.color, self.ad_manager_client, self.setting_class)
+
+        line_items_to_update = []
+        updater.update_line_items(line_items_to_update)
+        self.logger.info.assert_called_once_with("No line items matched the criteria for update.")
+        assert updater.logger.info.call_count == 1
+
 class TestVideoPositionUpdater(unittest.TestCase):
     """
     Unit tests for the VideoPositionUpdater class.
@@ -307,8 +350,7 @@ class TestVideoPositionUpdater(unittest.TestCase):
             with patch.object(updater, 'select_line_items_to_update', return_value=([], {}, {})):
                 updater.update()
 
-        mock_logger.info.assert_not_called()
-        mock_ad_manager_client.GetService.assert_not_called()
+        mock_logger.info.assert_called_once_with("No line items matched the criteria for update.")
 
 
     @patch('builtins.input', return_value='n')
@@ -345,6 +387,206 @@ class TestVideoPositionUpdater(unittest.TestCase):
         updater.logger.info.assert_called()
         assert updater.logger.info.call_count == 2
 
+class TestLineItemUpdater(unittest.TestCase):
+
+    def setUp(self):
+        # Common settings for all tests
+        self.common_settings = {
+            'DFP_ORDER_NAME': 'Order1',
+            'LINE_ITEM_NAME_REGEX': '.*',
+            'DFP_LINEITEM_TYPE': 'PRICE_PRIORITY',
+            'NEW_LINEITEM_TYPE': 'NETWORK'
+        }
+
+        self.mock_logger = MagicMock()
+        self.mock_color = MagicMock()
+        self.mock_ad_manager_client = MagicMock()
+        self.mock_setting_class = type('settings', (object,), self.common_settings)
+
+    @patch('builtins.input', return_value='n')
+    def test_confirm_inputs_user_selects_n(self, _):
+        # setup and create class object
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        self.assertFalse(updater.confirm_inputs())
+
+        updater.logger.info.assert_called()
+        assert updater.logger.info.call_count == 2
+
+    @patch('builtins.input', return_value='y')
+    def test_confirm_inputs_user_selects_y(self, _):
+        # setup and create class object
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        self.assertTrue(updater.confirm_inputs())
+
+        updater.logger.info.assert_called()
+        assert updater.logger.info.call_count == 1
+
+    @patch('builtins.input', return_value='')
+    def test_confirm_inputs_invalid(self, _):
+        # Test case 2: Confirm inputs with invalid inputs
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        self.assertFalse(updater.confirm_inputs())
+
+    @patch('builtins.input', return_value='y')
+    def test_confirm_inputs_not_allowed_lineitemtype(self, _):
+        # Test case 3: Confirm inputs with lineitemype not allowed
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        updater.setting_class.NEW_LINEITEM_TYPE = 'STANDARD'
+        self.assertFalse(updater.confirm_inputs())
+
+    @patch('builtins.input', return_value='y')
+    def test_confirm_inputs_for_same_lineitemtype(self, _):
+        # Test case 4: Confirm inputs with same DFP_LINEITEM_TYPE and NEW_LINEITEM_TYPE
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        updater.setting_class.NEW_LINEITEM_TYPE = 'PRICE_PRIORITY'
+        self.assertFalse(updater.confirm_inputs())
+
+
+    def test_select_line_items_to_update_for_network_lineitemtype(self):
+        # Test case 3: Select line items to update with valid inputs
+        line_items = [{'name': 'LineItem1', 'lineItemType': 'PRICE_PRIORITY', 'primaryGoal':{}}]
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+
+        expected = ([{'name': 'LineItem1', 'lineItemType': 'NETWORK', 'primaryGoal':{'goalType': 'DAILY', 'units': 100},'priority': 12}], {'LineItem1': 'PRICE_PRIORITY'})
+
+        self.assertEqual(updater.select_line_items_to_update(line_items) ,expected)
+
+    def test_select_line_items_to_update_for_house_lineitemtype(self):
+        # Test case 3: Select line items to update with valid inputs
+        line_items = [{'name': 'LineItem1', 'lineItemType': 'PRICE_PRIORITY', 'primaryGoal':{}}]
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        updater.setting_class.NEW_LINEITEM_TYPE = 'HOUSE'
+
+        expected = ([{'name': 'LineItem1', 'lineItemType': 'HOUSE','priority': 16, 'primaryGoal':{'goalType': 'DAILY', 'units': 100}}], {'LineItem1': 'PRICE_PRIORITY'})
+
+        self.assertEqual(updater.select_line_items_to_update(line_items) ,expected)
+
+    def test_select_line_items_to_update_for_sponsorship_lineitemtype(self):
+        # Test case 3: Select line items to update with valid inputs
+        line_items = [{'name': 'LineItem1', 'lineItemType': 'PRICE_PRIORITY', 'primaryGoal':{}}]
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        updater.setting_class.NEW_LINEITEM_TYPE = 'SPONSORSHIP'
+
+        expected = ([{'name': 'LineItem1', 'lineItemType': 'SPONSORSHIP', 'primaryGoal':{'unitType': 'IMPRESSIONS','goalType': 'DAILY', 'units': 100}, 'skipInventoryCheck': True,'allowOverbook': True,'priority': 4}], {'LineItem1': 'PRICE_PRIORITY'})
+
+        self.assertEqual(updater.select_line_items_to_update(line_items) ,expected)
+
+    def test_select_line_items_to_update_for_pricepriority_lineitemtype(self):
+        # Test case 3: Select line items to update with valid inputs
+        line_items = [{'name': 'LineItem1', 'lineItemType': 'NETWORK'}]
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+        updater.setting_class.DFP_LINEITEM_TYPE = 'NETWORK'
+        updater.setting_class.NEW_LINEITEM_TYPE = 'PRICE_PRIORITY'
+
+        expected = ([{'name': 'LineItem1', 'lineItemType': 'PRICE_PRIORITY','priority': 12}], {'LineItem1': 'NETWORK'})
+
+        self.assertEqual(updater.select_line_items_to_update(line_items) ,expected)
+
+    def test_select_line_items_to_update_for_multiple_line_items_passed_as_input(self):
+        line_items = [
+            {
+                'name': 'line_item_1',
+                'lineItemType': 'PRICE_PRIORITY',
+                'primaryGoal': {}
+            },
+            {
+                'name': 'line_item_2',
+                'lineItemType': 'PRICE_PRIORITY',
+                'primaryGoal': {}
+            },
+            {
+                'name': 'line_item_3',
+                'lineItemType': 'PRICE_PRIORITY',
+                'primaryGoal': {}
+            }
+        ]
+        expected_updated_line_items = [
+            {
+                'name': 'line_item_1',
+                'lineItemType': 'NETWORK',
+                'primaryGoal' : {
+                    'goalType' : 'DAILY',
+                    'units' : 100
+                },
+                'priority': 12
+            },
+            {
+                'name': 'line_item_2',
+                'lineItemType': 'NETWORK',
+                'primaryGoal' : {
+                    'goalType' : 'DAILY',
+                    'units' : 100
+                },
+                'priority': 12
+            },
+            {
+                'name': 'line_item_3',
+                'lineItemType': 'NETWORK',
+                'primaryGoal' : {
+                    'goalType' : 'DAILY',
+                    'units' : 100
+                },
+                'priority': 12
+            }
+        ]
+
+        expected_line_item_with_curr_type = {
+            'line_item_1': "PRICE_PRIORITY",
+            'line_item_2': "PRICE_PRIORITY",
+            'line_item_3': "PRICE_PRIORITY",
+        }
+        expected_skip_line_items = {
+            'line_item_3': "attempt to target same video position multiple time"
+        }
+
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, self.mock_ad_manager_client, self.mock_setting_class)
+
+        updated_line_items, line_items_with_current_type = updater.select_line_items_to_update(line_items)
+
+        self.assertEqual(updated_line_items, expected_updated_line_items)
+        self.assertEqual(line_items_with_current_type, expected_line_item_with_curr_type)
+
+    @patch('builtins.input', return_value='y')
+    @patch('tasks.update.ad_manager.AdManagerClient')
+    def test_update_after_user_confirmation(self, mock_ad_manager_client,mock_input):
+        mock_logger = MagicMock()
+        expected_result = [{'name': 'line_item_1'}]
+        mock_line_item_service = MagicMock()
+        mock_line_item_service = mock_ad_manager_client.GetService.return_value
+        mock_line_item_service.updateLineItems.return_value = expected_result
+
+
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, mock_ad_manager_client, self.mock_setting_class)
+
+        # Mock the get_line_items method to return a response with line items
+        with patch.object(updater, 'get_line_items', return_value={'results': [{'name': 'line_item_1'}]}):
+            with patch.object(updater, 'select_line_items_to_update', return_value=([{'name': 'line_item_1'}], {})):
+                updater.update()
+
+        mock_ad_manager_client.GetService.assert_called()
+        updater.logger.info.assert_called()
+        assert updater.logger.info.call_count == 3
+
+
+    @patch('builtins.input', return_value='y')
+    @patch('tasks.update.ad_manager.AdManagerClient')
+    def test_update_no_lineitems_found(self, mock_ad_manager_client,mock_input):
+        mock_logger = MagicMock()
+        expected_result = [{'name': 'line_item_1'}]
+        mock_line_item_service = MagicMock()
+        mock_line_item_service = mock_ad_manager_client.GetService.return_value
+        mock_line_item_service.updateLineItems.return_value = expected_result
+
+        updater = LineItemTypeUpdater(self.mock_logger, self.mock_color, mock_ad_manager_client, self.mock_setting_class)
+
+        # Mock the get_line_items method to return a response with line items
+        with patch.object(updater, 'get_line_items', return_value={}):
+                updater.update()
+
+        #mock_ad_manager_client.GetService.assert_called()
+        updater.logger.info.assert_called()
+        assert updater.logger.info.call_count == 1
+
 class TestMainFunction(unittest.TestCase):
     """
     Unit tests for the main function.
@@ -356,7 +598,7 @@ class TestMainFunction(unittest.TestCase):
     def test_main_when_command_line_arg_is_absent(self,mock_print):
         main()
         expected_print_calls = [
-            call("Usage: python -m tasks.update [VideoPosition]"),
+            call("Usage: python -m tasks.update [VideoPosition|LineItemType]"),
             call("Example: python -m tasks.update VideoPosition")
         ]
         mock_print.assert_has_calls(expected_print_calls, any_order=True)

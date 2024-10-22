@@ -38,10 +38,42 @@ To execute the Video Position Update Task, use the following command:
 python -m tasks.update VideoPosition
 ```
 
-**Limitations**
+
+**Limitations:**
+
 1. Line item to be updated should be of type "Video" because only "video" line item supports video position targeting.
 2. If the selected line item has multiple video-position targeted then it will not update the line item.
 3. If the selected line item is already targeted for 'NEW_VIDEO_POSITION' then it will not update the line item.
 4. Line item to be updated should have been created using tasks/add_new_openwrap_partner.py
+</details>
+
+<details>
+  <summary>2. Line Item Type</summary><br/>
+
+The `LineItemType` class in the `update_settings.py` file contains configuration parameters that are required to update the Line Item Type of line items.
+
+**Parameters:**
+
+| **Parameter** | **Description** | **Type** | **Example** |
+| :---------- | :-------------- | :------- | :--------------- |
+| `DFP_ORDER_NAME` | The name of your GAM order. Line items will be updated from this order. | string | 'test_order' |
+| `LINE_ITEM_NAME_REGEX` | A string representing a regular expression pattern to match line item names. <br> 1. To select all line items from order, set this to '%' <br> 2. To select line items having prefix as 'prefix\_', set this to 'prefix\_%' <br> 3. To select line items having suffix as '\_suffix', set this to '%\_suffix' | string | '%' |
+| `DFP_LINEITEM_TYPE` | Line item type. <br>Can be "NETWORK", "HOUSE", "PRICE_PRIORITY", or "SPONSORSHIP". | string | 'PRICE_PRIORITY' |
+| `NEW_LINEITEM_TYPE` | The value of new line item type to target.<br>Valid values: "NETWORK", "HOUSE", "PRICE_PRIORITY", "SPONSORSHIP". | string | 'NETWORK' |
+
+**How to Run:**
+
+To execute the Line Item Type Update Task, use the following command:
+
+```
+python -m tasks.update LineItemType
+```
+
+**Limitations:**
+
+1. Line item to be updated should have been created using tasks/add_new_openwrap_partner.py
+2. This task should not be used for updating line items of Adpod setup, as it could interfere with the existing deal setup for sponsorship line items and cause unexpected behavior.
+
+
 
 </details>

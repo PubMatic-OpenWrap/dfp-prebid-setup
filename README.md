@@ -129,7 +129,7 @@ If successful, it returns all the orders in your GAM account.
 |`DFP_ROADBLOCK_TYPE`|Same as **Display Creatives** in previous Line Item Tool version. Valid values: `ONE_OR_MORE` and `AS_MANY_AS_POSSIBLE`.|string|None|
 |`LINE_ITEM_PREFIX`|The prefix to insert before a line-item name.|string|None|
 |`OPENWRAP_CUSTOM_TARGETING`|Array of extra targeting rules per line item. Not applicable for 'IN_APP', 'IN_APP_VIDEO', 'IN_APP_NATIVE' and 'JWPLAYER'|array of arrays (For example, `[("a", "IS", ("1", "2", "3")), ("b", "IS_NOT", ("4", "5", "6"))]`.)|None|
-|`CURRENCY_EXCHANGE`|Same as **Currency Module** in the previous Line Item Tool. When used, this option converts the _rate_ calculated from CSV to the network's currency setting. This is applicable for `WEB`, `WEB_SAFEFRAME` and `NATIVE` only. |bool|True|
+|`CURRENCY_EXCHANGE`|Same as **Currency Module** in the previous Line Item Tool. When used, this option converts the _rate_ calculated from CSV to the network's currency setting. This is applicable for `WEB`, `WEB_SAFEFRAME` and `NATIVE`, `IN_APP`, `IN_APP_VIDEO` only. |bool|True|
 |`OPENWRAP_USE_1x1_CREATIVE`| When this option is set, the tool creates a single creative with size 1x1 and all lineitems with size overrides. |bool|False|
 |`OPENWRAP_NATIVE_CREATIVE_USER_DEFINED_VAR`| When this option is set, the tool creates a string variable for NATIVE creative type. |string|None|
 |`VIDEO_POSITION_TYPE`| determines which video position lineitem will target. Valid values -  `PREROLL`, `MIDROLL`, `POSTROLL`.This is a optional setting and is applicable for video and adpod setup. For adpod setup each slot lineitem will have same video position targeting |string|None|
