@@ -5,7 +5,7 @@ from dfp.client import get_client
 
 def get_dfp_network():
     dfp_client = get_client()
-    network_service = dfp_client.GetService('NetworkService', version='v202402')
+    network_service = dfp_client.GetService('NetworkService', version='v202411')
     current_network = network_service.getCurrentNetwork()
     return current_network
 
