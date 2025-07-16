@@ -216,7 +216,7 @@ class AddNewOpenwrapPartnerTests(TestCase):
     with self.assertRaises(BadSettingException):
       tasks.add_new_openwrap_partner.main() 
 
-  
+  @patch('settings.OPENWRAP_SETUP_TYPE', constant.WEB, create=True)
   def test_wrong_bidder_code_setting(self,mock_dfp_client):
     """
     It throws an exception with a Bad setting.
