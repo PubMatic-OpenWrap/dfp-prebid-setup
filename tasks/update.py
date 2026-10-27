@@ -54,7 +54,7 @@ class BaseSettingUpdater:
         self.color=color
         self.ad_manager_client = ad_manager_client
         self.setting_class = setting_class
-        self.API_VERSION = "v202508"
+        self.API_VERSION = "v202608"
 
     def confirm_inputs(self):
         """
